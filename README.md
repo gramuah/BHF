@@ -1,6 +1,4 @@
 # BHF - Boosted Hough Forest
-- - -
-- - -
 
 #### REQUIREMENTS:
 
