@@ -1,0 +1,244 @@
+General:
+{
+  // Method: 5 = Hough Forest, 6 = Boosted Hough Forest, 7 = AD Hough Forest
+  method = 7;
+  
+  // mode: 0=train, 1=detect, 2=train&detect, 3=analyze
+  mode = 1;
+  
+  // quiet mode (no outputs)
+  quiet = 0;
+  
+  // debug output on/off
+  debug_on = 0;
+
+  // output file (results, etc. ...)
+  path_output = "out.txt";
+};
+
+
+
+Forest:
+{
+  // general forest stuff ####################################################################################################
+
+  // number of trees
+  num_trees = 35;
+  
+  // maximum tree depth
+  max_tree_depth = 20;
+  
+  // minimum samples for further splitting
+  min_split_samples = 20;
+  
+  // number of node tests (only the number of randomly drawn split functions)
+  num_node_tests = 2000;
+  
+  // number of thresholds tested for each randomly drawn split function (<num_node_tests>)
+  // This results in <num_node_tests> * <num_node_thresholds> splits tested per node!
+  num_node_thresholds = 10;
+  
+  // number of random samples used for optimizing a single node in the trees
+  // set to x = 0 if all samples should be used per node
+  // set to x > 0 if x samples should be used per node (this is of course always the min of x and 
+  // the actual number of samples available per node)
+  // for classification, sampling is performed such that each class gets an equal number of samples
+  num_random_samples_for_splitting = 20; // 20 is a good value ;)
+  
+  // type of bagging used: 0=none (all samples are used for each tree), 1=subsample with replacement, 2=random-fixed-amount
+  bagging_type = 1;
+
+  // refine the trees with the out-of-bag samples (out-of-bag samples are only 
+  // available for a corresponding <bagging_type> (subsample with replacement)
+  do_tree_refinement = 0;
+
+  // type of split function: 
+  // 3 = pixel-pair-tests
+  // 4 = haar-like -> avgregion-pair-tests
+  // 2 = ordinal (arg-max (index) of a subset of dimensions (oblique_k parameter), threshold is an integer in {0, ..., K-1})
+  // 5 = conditioned pixel-pair-tests
+  // 6 = single pixel tests
+  splitfunction_type = 3;
+
+  // number of features used for evaluating the ordinal split (for the case of <splitfunction_type>=2, i.e., the ordinal split function
+  ordinal_split_k = 4;
+
+  // split evaluation type for classification: 
+  // 0 = entropy, 1 = Gini, 2 = use the loss specified in <global_loss_classification>
+  splitevaluation_type_classification = 0;
+  
+  // split evaluation type for regression:
+  // 0 = reduction in variance
+  // 1 = differential entropy, Gauss assumption (full covariance matrix)
+  // 2 = differential entropy, Gauss assumption (diagonalized covariance matrix)
+  splitevaluation_type_regression = 1;
+
+  // Different types of aggregating regression targets in a leafnode (important for the Hough Forests case)
+  // 0 = All (non-parameteric), 1 = Mean, 2 = HillClimb, 3 = Meanshift
+  leafnode_regression_type = 1;
+
+  
+
+  // ADHF specific stuff ####################################################################################################
+
+  do_classification_weight_updates = 1;
+
+  // the global loss to be optimized in ADFs
+  // 0 = logit loss, 1 = hinge loss, 2 = savage loss, 3 = exponential loss, 4 = tangent loss
+  global_loss_classification = 4;
+
+  do_regression_weight_updates = 1;
+  
+  // the global loss to be optimized in ARFs
+  // 0 = squared loss, 1 = absolute loss, 2 = Huber loss
+  global_loss_regression = 0;
+  
+  // the delta parameter of the Huber loss for the global regression loss
+  global_loss_regression_Huber_delta = 0.5;
+  
+  // TODO: I think, this is obsolete in the current framework -> regression_vote_accum_method is the same as the leafnode_regression_type
+  // how the votes are accumulated for making a single prediction (used for the weight updates!)
+  // this means how the predictions of all leafnodes are aggregated to a single prediction, this is not the same as the
+  // same as the (regression) prediction model a leafnode itself (see leafnode_regression_type!)
+  regression_vote_accum_method = 0; // 0=MEAN, 1=HILLCLIMB
+  
+  // shrinkage factor
+  shrinkage = 1.0;
+
+
+  
+
+
+  // Hough Forest specific stuff (forest) ######################################################################################
+  
+  // which channels (channel-combination) should be used
+  // 0 = same-channel, 1 = random-channel, 2 = 50/50 chance of same-channel or random-channel
+  split_channel_selection = 0;
+
+  // mean-shifted votes: k > 0 (!!!) use max. k votes (only relevant during testing, if mean-shift voting is active!)
+  // this is also important now in combination with leafnode_regression_type and with the task POSE_ESTIMATION!
+  mean_shift_votes_k = 1;
+
+  // beginning with this depth, the forest only evaluates for regression
+  depth_regression_only = 13; // 13
+
+
+  
+
+
+  // Hough Forest specific stuff (prediction) ######################################################################################
+  
+  // use meanshifted leafnode votes for Hough voting
+  use_meanshift_voting = 0;
+  
+  // evaluation grid
+  // 0=Dense, 1=Vote on each 2nd pixel(1px distance), ...
+  voting_grid_distance = 0;
+
+  // flag for printing the Hough maps
+  print_hough_maps = 1;
+  
+  // output scale for Houghmaps (just for better display)
+  houghmaps_outputscale = 300;
+
+  // 0 = do not print detection images, x > 0 = print top x detections
+  print_detection_images = 1;
+
+  // size of the patch (height, width)
+  // 16x16 for object detection, 100x100 for pose estimation
+  patch_size = [16, 16];
+
+  // indicates whether or not the detections should be returned as bboxes, i.e., the postprocessing is done in C++
+  return_bboxes = 1;
+
+  // the average bbox (estimated from training data) is scaled with these factors (height and width, respectively)
+  avg_bbox_scaling = [1.0, 1.0];
+
+  // use min/max filters
+  use_min_max_filters = 1;
+  
+  // use backprojections for bbox estimation
+  backproj_bbox_estimation = 0;
+  
+  // kernel width around peak for searching for backprojections
+  backproj_bbox_kernel_w = 5;
+  
+  // if this parameter approaches zero (it should not be set to exactly zero!!!) then we use the min-max locations
+  backproj_bbox_cumsum_th = 0.02;
+  
+  
+  // Hough Forest Postprocessing ##################################################################################################
+  
+  // Different types of non-maximum suppression
+  // 0 = Gall, 1 = AdaptKernel, 2 = Pyramid
+  nms_type = 0;
+  
+  // gauss smoothing kernel width
+  hough_gauss_kernel_w = 5;
+  
+  // maximum number of detections per image
+  max_detections_per_image = 10;
+  
+  // minimum height of a peak in the Hough image to be identified as a detection
+  min_detection_peak_height = 0.001;
+  
+  // scale interpolation in the Hough images
+  use_scale_interpolation = 1;
+
+
+  
+  // Pose Estimation Stuff ##########################################################################################################
+  
+  // for a valid vote, variance of target predictions has to be smaller than this threshold
+  poseestim_maxvar_vote = 3.0;
+
+  // minimum foreground probability for being a valid vote
+  poseestim_min_fgprob_vote = 0.5;
+
+
+};
+
+Data:
+{
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // FOREST-RELEVANT PATHS: output paths (trees, Hough images, ...)
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  path_trees = "../bindata/trees/";
+  houghimgpath = "../bindata/hough_images/";
+  bboxpath = "../bindata/bboxes/";
+  detectionimgpath = "../bindata/detection_images/";
+  
+  // Obsolete for this application
+  poseestimatespath = "../bindata/poseestimates/";
+
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // OTHER OUTPUT PATHS (store/load data sets, sample-weights, segmentations (MIL), ...)
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // Store/Load the exact same data set (i.e., same random locations for patches!)
+  store_dataset = 1;
+  load_dataset = 0;
+  fixeddatasetpath = "../bindata/fixed_dataset.txt";
+  sampleweightprogresspath = "../bindata/sampleweight_progress.txt";
+  finalsamplelabelingpath = "../bindata/final_sample_labeling.txt";
+  trainprobmapspath = "../bindata/imageprobmaps";
+
+  // a general scaling factor for all input images! If not specified, this is set to 1.0 (default value) 
+  general_scaling_factor = 1.0;
+
+
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // OBJECT DETECTION DATA SETS
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  posExamplesPath = "../../../data/training_cropped_images";
+  posExamplesFile = "../../../data/train_pos_GT_4_pose_ze.txt";
+  numPosPatchesPerImage = 10;
+  use_segmasks = 0;
+  negExamplesPath = "../../../data/training_negative_images";
+  negExamplesFile = "../../../data/train_neg_glasner.txt";
+  numNegPatchesPerImage = 10;
+  testImagesPath = "../../../data/testing_images";
+  testImagesFilenames = "../../../data/test_all_glasner.txt";
+  test_image_scales = [0.2036, 0.2199, 0.2362, 0.2524, 0.2687, 0.2850, 0.3013, 0.3176, 0.3334, 0.3502, 0.3664, 0.3827];
+
+  
+};
