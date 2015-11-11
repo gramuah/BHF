@@ -16,8 +16,8 @@ required to build the code:
     
 Adapt the corresponding parts in the CMakeLists.txt files in:
             
-      "ADF_ARF_Public/src/apps/adf_classification/"
-      "ADF_ARF_Public/src/apps/arf_regression/"
+      "BHF/src/apps/adf_classification/"
+      "BHF/src/apps/arf_regression/"
 
 ---
 
@@ -31,7 +31,7 @@ ARF.
 To build the code, change the directory to 
 
 ```
-    ADF_ARF_Public/bin/*/build
+    BHF/bin/*/build
 ```
 where "\*" is either "adf_classification" or "arf_regression". 
 
@@ -69,7 +69,7 @@ Example config files are provided in the corresponding folders, i.e.,
 ```
     "bin/*/configs/std.txt"
 ```
-CHANGE THE DIRECTORIES!!!
+CHECK THE DIRECTORIES!!!
 
 ---
 
