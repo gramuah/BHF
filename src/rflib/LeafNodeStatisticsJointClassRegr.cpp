@@ -185,8 +185,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					float w = 1.0 / float(leafstats.size()*leafstats[i]->m_offsets[1].size());
 					accumOffsets += (int)leafstats[i]->m_offsets[1].size();
 					for(size_t of=0; of < (int)leafstats[i]->m_offsets[1].size(); of++){
-						//if ((int)sample->m_label.patch_id != (int)leafstats[i]->patch_id[of]){
-
+						
 						//denormalization estimated offset				
 						double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
 						double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
