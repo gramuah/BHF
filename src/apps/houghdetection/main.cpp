@@ -49,17 +49,10 @@ void train(AppContextJointClassRegr* apphp)
 	// 1) read the data
 	if (!apphp->quiet)
 		cout << "Load training data ..." << endl;
-	DataLoaderHoughObject mydataloader(apphp);
+	
+        DataLoaderHoughObject mydataloader(apphp);
 	DataSet<SampleImgPatch, LabelJointClassRegr> dataset_train = mydataloader.LoadTrainData();
-//db
-/*for (int kk=0; kk<10; kk++){
-	cout << dataset_train[kk]->m_label.regr_offset << endl;
-	cout << dataset_train[kk]->m_label.regr_target << endl;
-	cout << dataset_train[kk]->m_label.latent_prediction << endl;
-	cout << dataset_train[kk]->m_label.latent_label << endl;}
-int a;
-cin >> a;*/
-////
+
 	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
 	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
 	// set some information for splitfunctions etc. in the app-context
@@ -72,8 +65,6 @@ cin >> a;*/
 	// normalize the regression targets of the training data
 	std::vector<VectorXd> offset_means, offset_stds;
 	mydataloader.NormalizeRegressionTargets(offset_means, offset_stds);
-	cout << "offset_means: " << offset_means[1] << endl;
-	cout << "offset_stds: " << offset_stds[1] << endl;
 
 	if (!apphp->quiet)
 	{
@@ -100,7 +91,6 @@ cin >> a;*/
 	cout << (*rfparams) << endl;
 
 
-
 	// 3) train the forest
 	THoughForest* rf;
 	switch (apphp->method)
@@ -118,7 +108,8 @@ cin >> a;*/
 	MatrixXd latent_variables = MatrixXd::Zero(dataset_train.size(), 2);
 	if (!apphp->quiet)
 		std::cout << "Training ... " << std::endl << std::flush;
-	rf->Train(dataset_train, latent_variables, offset_means[1], offset_stds[1]);//, latent_variables
+
+	rf->Train(dataset_train, latent_variables, offset_means[1], offset_stds[1]);
 	if (!apphp->quiet)
 		cout << "done" << endl << flush;
 
@@ -127,7 +118,7 @@ cin >> a;*/
 	rf->DenormalizeTargetVariables(offset_means, offset_stds);
 
 	// 4.2) and save it
-	rf->Save(apphp->path_trees, latent_variables);//, latent_variables
+	rf->Save(apphp->path_trees, latent_variables);
 
 	// 4.3) delete the training samples
 	dataset_train.DeleteAllSamples();
@@ -154,10 +145,14 @@ void houghdetect(AppContextJointClassRegr* apphp)
 	rfparams->m_adf_loss_classification = apphp->global_loss_classification;
 	rfparams->m_adf_loss_regression = apphp->global_loss_regression;
 
-	apphp->num_classes = 2;
-	apphp->num_z = 4;
-
-
+        DataLoaderHoughObject mydataloader(apphp);
+	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
+	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
+	apphp->num_classes = num_classes;
+	apphp->num_z = num_z;
+	
+	cout << " " << endl;
+	std::cout << "Testing ..." << std::endl;
 	// Loading the forest
 	if (!apphp->quiet)
 		std::cout << "Loading the forest" << std::endl;
@@ -174,7 +169,14 @@ void houghdetect(AppContextJointClassRegr* apphp)
 		throw std::runtime_error("main.cpp: unknown rf-method defined!");
 	}
 	rf->Load(apphp->path_trees);
-cout << "Load done" << endl;
+	cout << "done" << endl;
+
+	int status = mkdir(apphp->path_bboxes.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	if (status == -1)
+	{
+		std::cout << "Could not create the folder to store bboxes" << std::endl;
+		throw std::runtime_error("Could not create bboxespath");
+	}
 
 	// init the detector
 	HoughDetector hd(rf, apphp);
@@ -197,7 +199,10 @@ void analyze_forest(AppContextJointClassRegr* apphp)
 	rfparams->m_adf_loss_classification = apphp->global_loss_classification;
 	rfparams->m_adf_loss_regression = apphp->global_loss_regression;
 
-	apphp->num_classes = 2;
+        DataLoaderHoughObject mydataloader(apphp);
+	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
+	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
+	apphp->num_classes = num_classes;
 
 
 	// Loading the forest

@@ -28,12 +28,12 @@ void HoughDetector::DetectList()
     std::vector<cv::Size> avg_bbox_size;
     avg_bbox_size.resize(m_apphp->num_z);
     std::vector<VectorXd> trainPose;
+    int NT;
     
-    avg_bbox_size = AverageBboxsizeFromTrainingdata(trainPose);
+    avg_bbox_size = AverageBboxsizeFromTrainingdata(trainPose, NT);
     for(size_t zz = 0; zz < m_apphp->num_z; zz++){
     	avg_bbox_size[zz].height *= m_apphp->avg_bbox_scaling[0];
     	avg_bbox_size[zz].width *= m_apphp->avg_bbox_scaling[1];
-    	cout << avg_bbox_size[zz].width << " " << avg_bbox_size[zz].height << endl;
     }
 
     if (!m_apphp->quiet){
@@ -43,6 +43,7 @@ void HoughDetector::DetectList()
     }
     // Run detector for each image
     int full_start = clock();
+
     #pragma omp parallel for
     for (size_t i = 0; i < filenames.size(); i++)
     {
@@ -51,21 +52,18 @@ void HoughDetector::DetectList()
         // Load image
         cv::Mat img_raw = DataLoaderHoughObject::ReadImageData(m_apphp->path_testImages + "/" + filenames[i]);
         // scaling
-		cv::Mat img;
-		cv::Size new_size = cv::Size((int)((double)img_raw.cols*this->m_apphp->general_scaling_factor), (int)((double)img_raw.rows*this->m_apphp->general_scaling_factor));
-		resize(img_raw, img, new_size, 0, 0, cv::INTER_LINEAR);
+	cv::Mat img;
+	cv::Size new_size = cv::Size((int)((double)img_raw.cols*this->m_apphp->general_scaling_factor), (int)((double)img_raw.rows*this->m_apphp->general_scaling_factor));
+	resize(img_raw, img, new_size, 0, 0, cv::INTER_LINEAR);
 
         // Storage for Hough Maps
        std::vector<std::vector<cv::Mat> > hough_maps(m_apphp->test_scales.size());
-       //std::vector<std::vector<std::map<long unsigned int, float> > > hough_pose_maps(m_apphp->test_scales.size());
        std::vector<std::vector<cv::MatND> > hough_pose_maps(m_apphp->test_scales.size());
        for (size_t zz = 0; zz < hough_maps.size(); zz++){
 		hough_maps[zz].resize(m_apphp->num_z);
 		hough_pose_maps[zz].resize(m_apphp->num_z);
        }
 
-
-//cout << "hough_maps.size(): " << m_apphp->num_z << " " << hough_maps.size() << " " << hough_maps[0].size() << endl;
         // Storage for Backprojections
         std::vector<std::vector<std::vector<std::vector<Vote> > > > vBackprojections; // scales, height, width, votes
         if (m_apphp->backproj_bbox_estimation)
@@ -76,7 +74,6 @@ void HoughDetector::DetectList()
         // Voting in the Hough Maps -> this fills the Hough-maps + Backprojections
 		this->DetectPyramid(img, hough_maps, hough_pose_maps, vBackprojections, cvRect(-1, -1, -1, -1), i);
 
-cout << "Voting in the Hough Maps done" << endl;
         // Store Hough Maps to HDD
         if (m_apphp->print_hough_maps)
         {
@@ -96,7 +93,7 @@ cout << "Voting in the Hough Maps done" << endl;
         // Hough Map Post-processing - NMS - find bounding boxes
 		if (m_apphp->return_bboxes)
 		{
-			this->DetectBoundingBoxes(img, hough_maps, hough_pose_maps, vBackprojections, avg_bbox_size, trainPose, i);
+			this->DetectBoundingBoxes(img, NT, hough_maps, hough_pose_maps, vBackprojections, avg_bbox_size, trainPose, i);
 		}
 
         // Status message
@@ -112,7 +109,6 @@ cout << "Voting in the Hough Maps done" << endl;
 }
 
 
-//void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv::Mat> >& hough_maps, std::vector<std::vector<std::map<long unsigned int, float> > >& hough_pose_maps,  std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, cv::Rect ROI, int index)
 void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv::Mat> >& hough_maps, std::vector<std::vector<cv::MatND> >& hough_pose_maps,  std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, cv::Rect ROI, int index)
 
 {
@@ -131,22 +127,6 @@ void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv:
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ########################################################################
@@ -174,7 +154,7 @@ void HoughDetector::ReadTestimageList(std::string path_testimages, std::vector<s
 }
 
 
-std::vector<cv::Size> HoughDetector::AverageBboxsizeFromTrainingdata(std::vector<VectorXd>& trainPose)
+std::vector<cv::Size> HoughDetector::AverageBboxsizeFromTrainingdata(std::vector<VectorXd>& trainPose, int& NT)
 {
     std::vector<cv::Size> avg_bbox_size;
     std::ifstream in(m_apphp->path_posAnnofile.c_str());
@@ -188,6 +168,7 @@ std::vector<cv::Size> HoughDetector::AverageBboxsizeFromTrainingdata(std::vector
         std::vector<double> mean_h;// = 0.0;
 	std::vector<int> count;// = 0.0;
         in >> size;
+	NT = size;
         in >> numop;
 	in >> num_latent_variables;
 	trainPose.resize(size);
@@ -234,22 +215,19 @@ std::vector<cv::Size> HoughDetector::AverageBboxsizeFromTrainingdata(std::vector
 }
 
 
-//void HoughDetector::DetectImage(const cv::Mat img, std::vector<cv::Mat>& hough_map, std::vector<std::map<long unsigned int, float> >& hough_pose_map, std::vector<std::vector<std::vector<Vote> > >& backprojections, cv::Rect ROI, int index)
 void HoughDetector::DetectImage(const cv::Mat img, std::vector<cv::Mat>& hough_map, std::vector<cv::MatND>& hough_pose_map, std::vector<std::vector<std::vector<Vote> > >& backprojections, cv::Rect ROI, int index)
 {
     // extract features
     std::vector<cv::Mat> img_features;
     DataLoaderHoughObject::ExtractFeatureChannelsObjectDetection(img, img_features, m_apphp);
 
-	// reset output image
-	for (int zz=0; zz < m_apphp->num_z; zz++){
-    		hough_map[zz] = cv::Mat::zeros(img.rows, img.cols, CV_32F); // ! NOT img.type() !!!
-		//int size[] = {img.rows, img.cols, 947};
-		//hough_pose_map[zz] = cv::MatND (3, size, CV_32F);
-	}
+    // reset output image
+    for (int zz=0; zz < m_apphp->num_z; zz++){
+        	hough_map[zz] = cv::Mat::zeros(img.rows, img.cols, CV_32F); // ! NOT img.type() !!!
+    }
 
 
-	// prepare the backprojections structure (pre-allocate the data structure)
+    // prepare the backprojections structure (pre-allocate the data structure)
     int bp_preallocsize = 50;
     std::vector<std::vector<int> > backprojections_cnt;
     if (m_apphp->backproj_bbox_estimation)
@@ -284,7 +262,7 @@ void HoughDetector::DetectImage(const cv::Mat img, std::vector<cv::Mat>& hough_m
 	int yoffset = m_pheight/2;
 
     // iterate the image
-	std::vector<Node<SampleImgPatch, LabelJointClassRegr, TSplitFunctionImgPatch, LeafNodeStatisticsJointClassRegr<AppContextJointClassRegr>, AppContextJointClassRegr>* > leafnodes;
+	std::vector<Node<SampleImgPatch, LabelJointClassRegr, TSplitFunctionImgPatch,     LeafNodeStatisticsJointClassRegr<AppContextJointClassRegr>, AppContextJointClassRegr>* > leafnodes;
 	SampleImgPatch imgpatch;
 	imgpatch.features = img_features;
 	if (m_apphp->split_function_type == SPLITFUNCTION_TYPE::HAAR_LIKE)
@@ -321,12 +299,9 @@ void HoughDetector::DetectImage(const cv::Mat img, std::vector<cv::Mat>& hough_m
 					throw std::runtime_error("m_votes should be for 2 classes!");
 
 				// we iterate the number of votes for the class 1 (i.e., the foreground class)
-				//for (size_t v = 0; v < leafnodes[l]->m_leafstats->m_votes[1].size(); v++)
-
+				
 				for (size_t v = 0; v < leafnodes[l]->m_leafstats->m_offsets[1].size(); v++)
 				{
-					//int vote_x = int(double(x + xoffset) + leafnodes[l]->m_leafstats->m_votes[1][v](0));
-					//int vote_y = int(double(y + yoffset) + leafnodes[l]->m_leafstats->m_votes[1][v](1));
 					int vote_x = int(double(x + xoffset) + leafnodes[l]->m_leafstats->m_offsets[1][v](0));
 					int vote_y = int(double(y + yoffset) + leafnodes[l]->m_leafstats->m_offsets[1][v](1));
 
@@ -336,11 +311,6 @@ void HoughDetector::DetectImage(const cv::Mat img, std::vector<cv::Mat>& hough_m
 
 						hough_map[leafnodes[l]->m_leafstats->m_latent_label[1][v]-1].at<float>(vote_y, vote_x) += (float)(w * leafnodes[l]->m_leafstats->m_vote_weights[1][0]);//
 
-						//int aux = leafnodes[l]->m_leafstats->m_latent_prediction[1][v]-1;
-						//long unsigned int aux2 = vote_x + (vote_y*hough_map[0].cols);// + (hough_map[0].cols*hough_map[0].rows*(int)leafnodes[l]->m_leafstats->m_azimuth[1][v]);
-
-						//hough_pose_map[aux][aux2] = leafnodes[l]->m_leafstats->img_id[v];//(float)(w * leafnodes[l]->m_leafstats->m_vote_weights[1][0]);
-						//hough_pose_map[leafnodes[l]->m_leafstats->m_latent_label[1][v]-1].at<float>(vote_y, vote_x, (int)leafnodes[l]->m_leafstats->img_id[v]) += 1;//(float)(w * leafnodes[l]->m_leafstats->m_vote_weights[1][0]);		
 						if (m_apphp->backproj_bbox_estimation)
 						{
 							backprojections[y][x][backprojections_cnt[y][x]].x = vote_x;
@@ -437,15 +407,14 @@ void HoughDetector::DetectImagePose(const cv::Mat img, cv::Mat& hough_map, int d
 					throw std::runtime_error("m_votes should be for 2 classes!");
 
 				// we iterate the number of votes for the class 1 (i.e., the foreground class)
-				//for (size_t v = 0; v < leafnodes[l]->m_leafstats->m_votes[1].size(); v++)
-
+				
 				for (size_t v = 0; v < leafnodes[l]->m_leafstats->m_offsets[1].size(); v++)
 				{
 					int vote_x = int(double(x + xoffset) + leafnodes[l]->m_leafstats->m_offsets[1][v](0));
 					int vote_y = int(double(y + yoffset) + leafnodes[l]->m_leafstats->m_offsets[1][v](1));
 
 					int zD = leafnodes[l]->m_leafstats->m_latent_label[1][v]-1;
-					//if ((zD == detected_z)  && (vote_x >= cx-3) && (vote_x <= cx+3) && (vote_y >= cy-3) && (vote_y <= cy+3))
+				
 					if ((zD == detected_z) && (vote_x == cx) && (vote_y == cy))
 						hough_map.at<float>(0, (int)leafnodes[l]->m_leafstats->img_id[v]) += 1;
 					
@@ -462,8 +431,7 @@ void HoughDetector::DetectImagePose(const cv::Mat img, cv::Mat& hough_map, int d
 }
 
 
-//void HoughDetector::DetectBoundingBoxes(cv::Mat img, vector<vector<cv::Mat> >& hough_maps, std::vector<std::vector<std::map<long unsigned int, float> > >& hough_pose_maps, std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, std::vector<cv::Size> avg_bbox_size, int img_id)
-void HoughDetector::DetectBoundingBoxes(cv::Mat img, vector<vector<cv::Mat> >& hough_maps, std::vector<std::vector<cv::MatND> >& hough_pose_maps, std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, std::vector<cv::Size> avg_bbox_size, std::vector<VectorXd> trainPose, int img_id)
+void HoughDetector::DetectBoundingBoxes(cv::Mat img, int NT, vector<vector<cv::Mat> >& hough_maps, std::vector<std::vector<cv::MatND> >& hough_pose_maps, std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, std::vector<cv::Size> avg_bbox_size, std::vector<VectorXd> trainPose, int img_id)
 {
  // 0) Some initial settings
     int avg_bbox_w = avg_bbox_size[0].width;
@@ -485,15 +453,10 @@ void HoughDetector::DetectBoundingBoxes(cv::Mat img, vector<vector<cv::Mat> >& h
             	if (reference_scale != k)
             	{
                 	cv::resize(hough_maps[k][zz], hough_maps[k][zz], cv::Size(hough_maps[reference_scale][zz].cols, hough_maps[reference_scale][zz].rows), 0.0, 0.0, cv::INTER_LINEAR);
-			//cv::resize(hough_pose_maps[k][zz], hough_pose_maps[k][zz], cv::Size(hough_maps[reference_scale][zz].cols, hough_maps[reference_scale][zz].rows), 0.0, 0.0, cv::INTER_LINEAR);
             	}
 
             	// smooth it
             	cv::GaussianBlur(hough_maps[k][zz], hough_maps[k][zz], cv::Size(5, 5), 0.0, 0.0, cv::BORDER_DEFAULT);
-//db
-	//cv::namedWindow("Hough Map", CV_WINDOW_AUTOSIZE );
-	//cv::imshow("Hough Map", hough_maps[k][zz]);
-	//cv::waitKey(0);
 
             }
 	}
@@ -730,21 +693,11 @@ void HoughDetector::DetectBoundingBoxes(cv::Mat img, vector<vector<cv::Mat> >& h
 	cv::Mat cLevel;
         cv::Size scale_size(int(roiImg.cols*m_apphp->test_scales[max_scale]+0.5), int(roiImg.rows*m_apphp->test_scales[max_scale]+0.5));
       	cv::resize(roiImg, cLevel, scale_size, 0.0, 0.0, cv::INTER_LINEAR);
-	cv::Mat poseVotes = cv::Mat::zeros(1, 947, CV_32F);
+	cv::Mat poseVotes = cv::Mat::zeros(1, NT, CV_32F);
 	
-	
-	//stringstream buffer;
-	//buffer << "/home/carolina/HoughDetectionFramework_glasner_z2_centers_voting_by_offsets_HI_roberto-v1_5max_znolatent_azimut_ar_idImg_back/bin/houghdetection/bindata/hough/image1.png";
-	//cv::imwrite(buffer.str(), roiImg);
-	//buffer << "/home/carolina/HoughDetectionFramework_glasner_z2_centers_voting_by_offsets_HI_roberto-v1_5max_znolatent_azimut_ar_idImg_back/bin/houghdetection/bindata/hough/image2.png";
-	//cv::imwrite(buffer.str(), cLevel);
-
 	cx = (max_loc.x - (current_detection(0) * m_apphp->test_scales[max_scale]));
 	cy = (max_loc.y - (current_detection(1) * m_apphp->test_scales[max_scale]));
 	
-//cout << cx << " " << cy << " " << max_loc.x << " " << current_detection(0) << " " << m_apphp->test_scales[max_scale] << " " << max_loc.y << " " << roiImg.cols << " " << roiImg.rows << endl;
-//int a;
-//cin >> a;
 	this->DetectImagePose(cLevel, poseVotes, max_z, int(cx), int(cy), cvRect(-1, -1, -1, -1));
 
 	cv::Point max_loc_tmp_pose;
@@ -830,17 +783,6 @@ void HoughDetector::DetectBoundingBoxes(cv::Mat img, vector<vector<cv::Mat> >& h
     }
     file.close();
 
-    /*stringstream center_filename;
-    center_filename << "/home/carolina/HoughDetectionFramework_glasner_z2/bin/houghdetection/bindata/centers/centers_testimg_" << img_id << ".txt";
-    std::ofstream file_1(center_filename.str().c_str());
-    file_1 << detection_centers.size() << endl;
-    for (size_t d = 0; d < detection_centers.size(); d++)
-    {
-        for (size_t j = 0; j < detection_centers[d].size(); j++)
-            file_1 << detection_centers[d](j) << " ";
-        file_1 << endl;
-    }
-    file_1.close();*/
 
     stringstream pose_filename;
     pose_filename << m_apphp->path_bboxes << "pose_testimg_" << img_id << ".txt";

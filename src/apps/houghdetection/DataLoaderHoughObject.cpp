@@ -132,10 +132,7 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	this->m_num_feature_channels = DataLoaderHoughObject::image_feature_data[0].size();
 
 	// 5) update the sample weights
-	//this->UpdateLatentVariables(m_trainset, z_targets);
-cout << "antes .at<float>(1, 1)" << endl;
 	this->UpdateSampleWeights(m_trainset);
-cout << ".at<float>(1, 1)" << endl;
 	// 6) return filled dataset
 	return m_trainset;
 }
@@ -272,13 +269,11 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 			// subtract the mean
 			this->m_trainset[i]->m_label.regr_target -= mean[lblIdx];
 			//Voting process without normalization
-			//this->m_trainset[i]->m_label.regr_center_gt -= mean[lblIdx];
 			this->m_trainset[i]->m_label.regr_patch_center_norm_gt = this->m_trainset[i]->m_label.regr_patch_center_gt - mean[lblIdx];
 			
 			// add the squared differences, TODO: libEigen3 definitely offers a more easy way to compute this!
 			std[lblIdx] += (this->m_trainset[i]->m_label.regr_target.array() * this->m_trainset[i]->m_label.regr_target.array()).matrix();
-			//for (int t = 0; t < this->m_trainset[i]->m_label.regr_target.rows(); t++)
-			//	std[lblIdx](t) += this->m_trainset[i]->m_label.regr_target(t) * this->m_trainset[i]->m_label.regr_target(t);
+			
 		}
 	}
 	// normalize the squared diffs
@@ -302,18 +297,12 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 		if (this->m_trainset[i]->m_label.vote_allowed)
 		{
 
-//debug 
-/*cout << this->m_trainset[i]->m_label.regr_patch_center_gt << endl;
-cout << this->m_trainset[i]->m_label.regr_center_gt << endl;
-cout << this->m_trainset[i]->m_label.img_size << endl;
-int a;
-cin >> a;*/
 
 			this->m_trainset[i]->m_label.regr_target = (this->m_trainset[i]->m_label.regr_target.array() / std[lblIdx].array()).matrix();
 			this->m_trainset[i]->m_label.regr_target_gt =this->m_trainset[i]->m_label.regr_target;
 
 			//Voting process without normalization
-			//this->m_trainset[i]->m_label.regr_center_gt = (this->m_trainset[i]->m_label.regr_center_gt.array() / std[lblIdx].array()).matrix();
+			
 			this->m_trainset[i]->m_label.regr_patch_center_norm_gt = (this->m_trainset[i]->m_label.regr_patch_center_norm_gt.array() / std[lblIdx].array()).matrix();
 		
 		}
@@ -359,7 +348,6 @@ void DataLoaderHoughObject::LoadPosTrainFile(vector<string>& vFilenames, vector<
         in >> size;
         in >> num_target_dims;
 	in >> num_z;
-cout << size << " " << num_target_dims << " " << num_z << endl;
         vFilenames.resize(size);
         vTarget.resize(size);
         vBBox.resize(size);

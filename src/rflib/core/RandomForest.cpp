@@ -126,22 +126,12 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 	{
 
 		//Voting process
-		//cout << s << " " << dataset[s]->m_label.img_size << endl;
 		std::vector<cv::Mat> hough_map;
 		hough_map.resize(m_appcontext->num_z);
 		// reset output image
 		for (int zz=0; zz < m_appcontext->num_z; zz++)
     			hough_map[zz] = cv::Mat::zeros(dataset[s]->m_label.img_size(1), dataset[s]->m_label.img_size(0), CV_32F); // ! NOT img.type() !!!
 
-		//#pragma omp critical
-		//{
-		/*if (dataset[s]->m_label.vote_allowed){
-		
-			patchCenter(0) = dataset[s]->m_label.regr_patch_center_gt(0);
-			patchCenter(1) =  dataset[s]->m_label.regr_patch_center_gt(1);
-		}
-	
-		patchClass = dataset[s]->m_label.class_label;*/
 		vector<LeafNodeStatistics*> tmp_stats(leafnodes[s].size());
 		for (size_t t = 0; t < leafnodes[s].size(); t++)
 		{
@@ -149,11 +139,8 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 		}
 
 		ret_stats[s] = LeafNodeStatistics::Average(tmp_stats, dataset[s], d, mean, std, hough_map, this->m_appcontext);
-		
-		//}	
 	}
 	
-	//cout << "TestAndAverage done: " << ret_stats[0].m_hough_img_prediction[1](0,0) << " " << ret_stats[0].m_hough_img_prediction[1](0,1) << endl;
 	return ret_stats;
 }
 
@@ -169,11 +156,6 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 	for (int zz=0; zz < m_appcontext->num_z; zz++)
     		hough_map[zz] = cv::Mat::zeros(sample->m_label.img_size(1), sample->m_label.img_size(0), CV_32F);
 
-	/*Eigen::VectorXd patchCenter = Eigen::VectorXd::Zero(2);
-	patchCenter(0) = sample->m_label.regr_patch_center_gt(0);
-	patchCenter(1) =  sample->m_label.regr_patch_center_gt(1);
-	int patchClass;
-	patchClass = sample->m_label.class_label;*/
 	std::vector<LeafNodeStatistics*> tmp_stats(leafnodes.size());
 	for (size_t t = 0; t < leafnodes.size(); t++)
 		tmp_stats[t] = leafnodes[t]->m_leafstats;

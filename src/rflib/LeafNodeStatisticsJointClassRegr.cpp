@@ -169,7 +169,6 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 		ret_stats.m_prediction.resize(apphp->num_classes);
 		ret_stats.m_hough_img_prediction.resize(apphp->num_classes);
 		ret_stats.m_vote_weights.resize(apphp->num_classes);
-//cout << "patchCenter: " << patchCenter(0) << " " << patchCenter(1) << endl;
 		for (size_t c = 0; c < apphp->num_classes; c++)
 		{
 			int accumOffsets=0;
@@ -186,25 +185,44 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					accumOffsets += (int)leafstats[i]->m_offsets[1].size();
 					for(size_t of=0; of < (int)leafstats[i]->m_offsets[1].size(); of++){
 						
-						//denormalization estimated offset				
-						double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
-						double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
+						int vote_x =0;
+						int vote_y =0;
+
+						//calculate the offsets from the residuals
+						if (d == 0){// root nodes
+							double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
+							double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
 						
-						double aux_x = regr_target_aux_x * std(0);
-						double aux_y = regr_target_aux_y * std(1);
-						aux_x += mean(0);
-						aux_y += mean(1);
-						int vote_x = int(sample->m_label.regr_patch_center_gt(0) + aux_x);
-						int vote_y = int(sample->m_label.regr_patch_center_gt(1) + aux_y);
-						//int vote_x = int(sample->m_label.regr_patch_center_gt(0) + leafstats[i]->m_offsets[1][of](0));
-						//int vote_y = int(sample->m_label.regr_patch_center_gt(1) + leafstats[i]->m_offsets[1][of](1));
+							double aux_x = regr_target_aux_x * std(0);
+							double aux_y = regr_target_aux_y * std(1);
+							aux_x += mean(0);
+							aux_y += mean(1);
+							vote_x = int(sample->m_label.regr_patch_center_gt(0) + aux_x);
+							vote_y = int(sample->m_label.regr_patch_center_gt(1) + aux_y);
+						}else{
+							//denormalization estimated residual				
+							double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
+							double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
+						
+							double aux_x = regr_target_aux_x * std(0);
+							double aux_y = regr_target_aux_y * std(1);
+							aux_x += mean(0);
+							aux_y += mean(1);
+							
+							//estimated offset
+							int off_x = int(leafstats[i]->m_offsets[1][of](0) - aux_x);
+							int off_y = int(leafstats[i]->m_offsets[1][of](1) -aux_y);						
+
+							vote_x = int(sample->m_label.regr_patch_center_gt(0) + off_x);
+							vote_y = int(sample->m_label.regr_patch_center_gt(1) + off_y);
+						}
 						if (vote_y >= 0 && vote_y < hough_map[0].rows && vote_x >= 0 && vote_x < hough_map[0].cols)
 						{
 							int aux = leafstats[i]->m_latent_prediction[1][of]-1;
-							hough_map[aux].at<float>(vote_y, vote_x) += (float)(w * leafstats[i]->m_vote_weights[1][0]);//
+							hough_map[aux].at<float>(vote_y, vote_x) += (float)(w * leafstats[i]->m_vote_weights[1][0]);
 							
 						}
-						//}
+						
 					}
 				}
 				
@@ -243,7 +261,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 						for(int zz=0; zz < apphp->num_z; zz++){
 							for(int v=0; v < apphp->num_target_variables; v++){
 								ret_stats.m_prediction[c](zz,v) += leafstats[i]->m_prediction[c](zz,v);
-								//ret_stats.m_hough_img_prediction[c](zz,v) += leafstats[i]->m_hough_img_prediction[c](zz,v);
+								
 							}
 						}
 						
@@ -258,15 +276,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 				}
 			}
 			if(c > 0 && sample->m_label.class_label > 0){
-				//detectPeaks in hough latent space
-				//for (int zz=0; zz < apphp->num_z; zz++)
-				//	cv::GaussianBlur(hough_map[zz], hough_map[zz], cv::Size(3, 3), 0.0, 0.0, cv::BORDER_DEFAULT);
-
-				//cv::namedWindow("Hough Map", CV_WINDOW_AUTOSIZE );
-				//cv::imshow("Hough Map", hough_map[zz]);
-				//cv::waitKey(0);
-
-				// Find current max value + location in hough latent space
+				// Find current max value + location in hough space
 		        	cv::Point max_loc_tmp;
 		        	cv::Point min_loc_tmp;
 		        	double min_val_tmp;
@@ -275,33 +285,18 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 		        	for (size_t zz = 0; zz < hough_map.size(); zz++)
         			{
 
-					hough_map[zz] += 0.1*sample->m_label.hough_map_patch[zz];//addTarget 
+					hough_map[zz] += 0.1*sample->m_label.hough_map_patch[zz];//addTarget (propagate the hough space) 
  					sample->m_label.hough_map_patch[zz] = hough_map[zz];//update the hough space
 					Eigen::VectorXd centers = Eigen::VectorXd::Zero(2);
-
-        				int num_small_size = min(100, (int)accumOffsets);	
-					for (int m = 0; m < num_small_size; m++){
-						cv::minMaxLoc(hough_map[zz], &min_val_tmp, &max_val_tmp, &min_loc_tmp, &max_loc_tmp);
-						centers(0) += (double)max_loc_tmp.x;
-						centers(1) += (double)max_loc_tmp.y;
-
-						int cy = (double)max((int)max_loc_tmp.y - 1, 0);
-	   					int cx = (double)max((int)max_loc_tmp.x - 1, 0);
-            					int cw = (double)min((int)max_loc_tmp.x + 2, hough_map[zz].cols-1) - cx;
-            					int ch = (double)min((int)max_loc_tmp.y + 2, hough_map[zz].rows-1) - cy;
-//cout << cx << " " << cy << " " << cw << " " << ch << " " << hough_map[zz].cols << " " << hough_map[zz].rows << endl;
-						cv::Mat roi(hough_map[zz], cv::Rect(cx, cy, cw, ch));
-				            	roi.setTo(cv::Scalar::all(0.0));
-
-					}
-
-
-					centers /= float(num_small_size);
+        					
+					cv::minMaxLoc(hough_map[zz], &min_val_tmp, &max_val_tmp, &min_loc_tmp, &max_loc_tmp);
+					centers(0) = (double)max_loc_tmp.x;
+					centers(1) = (double)max_loc_tmp.y;
+								
+					//center prediction
 					ret_stats.m_hough_img_prediction[c](zz,0) = (double)centers(0);
 					ret_stats.m_hough_img_prediction[c](zz,1) = (double)centers(1);
-//cout << "hola: " << hough_map[zz].at<float>(max_loc_tmp.y, max_loc_tmp.x) << endl;
-//int a;
-//cin >> a;
+
 
             	
         			}
@@ -319,7 +314,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					for(int zz=0; zz < apphp->num_z; zz++){
 						for(int v=0; v < apphp->num_target_variables; v++){
 							ret_stats.m_prediction[c](zz,v) /= (double)leafstats.size();
-							//ret_stats.m_hough_img_prediction[c](zz,v) /= (double)leafstats.size();
+						
 						}
 					}
 				}
@@ -605,7 +600,7 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 	ret_vec_aux_best_center_norm.resize(gt_label.regr_target.rows(), 0.0);
 	double bestNorm = 1e16;
 	res.bestz = 0;
-	//std::vector<double> ret_vec;
+	
 	if (prediction_type == 0) // CLASSIFICATION
 	{
 		// v1
@@ -633,48 +628,7 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 			return res;
 
 		// return the difference between the prediction & ground-truth
-		//for (size_t v = 0; v < ret_vec.size(); v++)
-		//	ret_vec[v] = this->m_votes[gt_label.class_label][0](v) - gt_label.regr_target_gt(v); // correct order is important: prediction - ground-truth!
-
-		/*for (int zz=0; zz < m_appcontext->num_z; zz++){
-			for (size_t v = 0; v < gt_label.regr_target.rows(); v++){
-				ret_vec_aux[v] = m_hough_center_prediction[gt_label.class_label](zz, v) - gt_label.regr_center_gt(v);
-				ret_vec_aux_center[v] = m_hough_center_prediction[gt_label.class_label](zz, v);
-//debug
-//cout << "CalculateADFTargetResidual: " << m_hough_center_prediction[gt_label.class_label](zz, v) << " " << gt_label.regr_center_gt(v) << endl;
-//int a;
-//cin >> a;				
-			}
-			double tempNorm = norm(ret_vec_aux, cv::NORM_L2);
-			if(tempNorm < bestNorm){
-				bestNorm = tempNorm;
-				ret_vec_aux_best = ret_vec_aux;
-				ret_vec_aux_best_center = ret_vec_aux_center;
-				res.bestz = zz+1;
-			}
-		}
-//cout << "ret_vec_aux_best_center: " << ret_vec_aux_best_center[0] << " " << ret_vec_aux_best_center[1] << endl;
-
-		if(bestNorm == 0){
-			res.ret_vec[0] = 0.0;
-			res.ret_vec[1] = 0.0; 
-		}else{
-			for (size_t v = 0; v < gt_label.regr_target.rows(); v++){
-				ret_vec_aux_best_center_norm[v] = ret_vec_aux_best_center[v] - mean(v);
-				ret_vec_aux_best_center_norm[v] /= std(v);
-				ret_vec_estimated_regr_target[v] = ret_vec_aux_best_center_norm[v] - gt_label.regr_patch_center_norm_gt(v);
-				//res.ret_vec[v] = ret_vec_estimated_regr_target[v] - gt_label.regr_target_gt(v);
-
-				ret_vec_estimated_regr_target[v] = ret_vec_aux_best_center[v] - gt_label.regr_patch_center_gt(v);
-				ret_vec_estimated_regr_target[v] -= mean(v);
-				ret_vec_estimated_regr_target[v] /= std(v);
-				res.ret_vec[v] = ret_vec_estimated_regr_target[v] - gt_label.regr_target_gt(v);
-			}
-
-
-		}*/
-
-		//NO LATENT
+		
 
 		for (size_t v = 0; v < gt_label.regr_target.rows(); v++){
 			ret_vec_aux[v] = m_hough_center_prediction[gt_label.class_label](gt_label.latent_label-1, v) - gt_label.regr_center_gt(v);
@@ -696,10 +650,6 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 			}
 		}
 
-
-		//for (size_t v = 0; v < gt_label.regr_target.rows(); v++){
-		//	res.ret_vec[v] = this->m_prediction[gt_label.class_label](res.bestz-1, v) - gt_label.regr_target_gt(v);
-		//}
 
 	}
 	else
@@ -751,21 +701,10 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::AddTarget(LeafNodeStatistics
 		// class in this node
 		if (this->m_votes[c].size() > 0)
 		{
-			//this->m_votes[c][0] += leafnodestats_src->m_votes[c][0];
-			//this->m_votes[c][0] += this->m_intermediate_prediction; // another wrong version
-			//this->m_votes[c][0] += leafnodestats_src->m_intermediate_prediction; // the old wrong version
-			this->m_votes[c][0] += 0.1*leafnodestats_src->m_votes[c][0]; // the erratum...
+	
+			this->m_votes[c][0] += 0.1*leafnodestats_src->m_votes[c][0]; 
 			this->m_prediction[c] += 0.1*leafnodestats_src->m_prediction[c];
-			//this->m_hough_img_prediction[c] += 0.1*leafnodestats_src->m_hough_img_prediction[c];
 		}
-		// OLD
-		//if (this->m_votes[c].size() == 0)
-		//{
-		//	this->m_votes[c].resize(1, Eigen::VectorXd::Zero(leafnodestats_src->m_votes[c][0].rows()));
-		//	this->m_vote_weights[c].resize(1, 0.0);
-		//}
-		// accumulate the votes!
-		//this->m_votes[c][0] += leafnodestats_src->m_votes[c][0];
 	}
 }
 
@@ -803,7 +742,6 @@ template<typename TAppContext>
 void LeafNodeStatisticsJointClassRegr<TAppContext>::Save(std::ofstream& out, Eigen::MatrixXd& latent_variables)
 {
 	// sample statistics
-	//out << m_num_samples << " " << m_num_pos_samples << " ";
 	out << m_num_samples << " " << m_num_samples_class.size() << " ";
 	for (size_t c = 0; c < m_num_samples_class.size(); c++)
 		out << m_num_samples_class[c] << " ";
@@ -869,68 +807,6 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::Save(std::ofstream& out, Eig
 	out << endl;
 }
 
-/*template<typename TAppContext>
-void LeafNodeStatisticsJointClassRegr<TAppContext>::Load(std::ifstream& in)
-{
-	// sample statistics
-	int num_classes;
-	in >> m_num_samples >> num_classes;
-	this->m_num_samples_class.resize(num_classes);
-	for (size_t c = 0; c < m_num_samples_class.size(); c++)
-		in >> m_num_samples_class[c];
-
-	// class histogram
-	in >> num_classes;
-	m_class_histogram.resize(num_classes);
-	for (size_t c = 0; c < m_class_histogram.size(); c++)
-		in >> m_class_histogram[c];
-
-	// voting vectors
-	in >> num_classes;
-	m_offsets.resize(num_classes);
-
-	for (size_t c = 0; c < num_classes; c++)
-	{
-		int num_votes, vote_dim;
-		in >> num_votes;
-		m_votes[c].resize(num_votes);
-		if (num_votes > 0)
-			in >> vote_dim;
-		for (size_t v = 0; v < m_votes[c].size(); v++)
-		{
-			//m_votes[c][v].resize(vote_dim);
-			m_votes[c][v] = Eigen::VectorXd::Zero(vote_dim);
-			for (size_t d = 0; d < m_votes[c][v].rows(); d++)
-				in >> m_votes[c][v](d);
-		}
-		int num_offsets;
-		in >> num_offsets;
-		
-		m_offsets[c].resize(num_offsets);
-
-		for (size_t v = 0; v < num_offsets; v++)
-		{
-			m_offsets[c][v] = Eigen::VectorXd::Zero(vote_dim);
-			for (size_t d = 0; d < m_offsets[c][v].rows(); d++)
-				in >> m_offsets[c][v](d);
-		}
-		
-		in >> num_votes;
-		m_vote_weights[c].resize(num_votes);
-		for (size_t v = 0; v < m_vote_weights[c].size(); v++)
-			in >> m_vote_weights[c][v];
-	}
-
-	// pseudo-class histogram
-	int num_pseudoclasses;
-	in >> num_pseudoclasses;
-	m_pseudoclass_histogram.resize(num_pseudoclasses);
-	for (size_t c = 0; c < m_pseudoclass_histogram.size(); c++)
-		in >> m_pseudoclass_histogram[c];
-
-
-}*/
-
 
 template<typename TAppContext>
 void LeafNodeStatisticsJointClassRegr<TAppContext>::Load(std::ifstream& in)
@@ -969,13 +845,13 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::Load(std::ifstream& in)
 			
 			for (size_t v = 0; v < m_votes[c].size(); v++)
 			{
-				//m_votes[c][v].resize(vote_dim);
+				
 				m_votes[c][v] = Eigen::VectorXd::Zero(vote_dim);
 				for (size_t d = 0; d < m_votes[c][v].rows(); d++)
 					in >> m_votes[c][v](d);
 			}
 		
-			in >> num_z >> num_targets;//TODO
+			in >> num_z >> num_targets;
 			m_prediction[c] = Eigen::MatrixXd::Zero(num_z, num_targets);
 
 			for (int zz=0; zz < num_z; zz++){
@@ -1046,29 +922,21 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::AggregateRegressionTargets(D
 	this->m_latent_prediction.resize(this->m_appcontext->num_classes);
 	this->m_vote_weights.resize(this->m_appcontext->num_classes);
 	this->m_prediction.resize(this->m_appcontext->num_classes);
-	//this->m_hough_img_prediction.resize(this->m_appcontext->num_classes);
-//m_appcontext->num_z
-
-
+	
 
 	// iterate the classes
 	for (size_t c = 0; c < this->m_votes.size(); c++)
 	{
 
 		this->m_prediction[c] = MatrixXd::Zero(m_appcontext->num_z, m_appcontext->num_target_variables);
-		//this->m_hough_img_prediction[c] = MatrixXd::Zero(m_appcontext->num_z, m_appcontext->num_target_variables);
 		for (size_t zz = 0; zz < m_appcontext->num_z; zz++)
 		{
 			vector<int> sample_indices_z;
 			int num_small_size_z = 0; 
-			num_small_size_z = min(1000, this->m_num_samples_latent[zz]);//int(1000.0 /(double)m_appcontext->num_z) 1000*m_appcontext->num_z
+			num_small_size_z = min(1000, this->m_num_samples_latent[zz]);
 			sample_indices_z.resize(num_small_size_z);
 			int scnt_z = 0;			
 			
-/*for (size_t i = 0; i < dataset.size(); i++)
-{
-	cout << dataset[i]->m_label.class_label << endl;
-}*/
 			for (size_t ii = 0; ii < dataset.size(); ii++)
 			{
 
@@ -1088,13 +956,11 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::AggregateRegressionTargets(D
 				{
 					for(size_t v = 0; v < m_appcontext->num_target_variables; v++){
 						this->m_prediction[c](zz, v) += dataset[sample_indices_z[k]]->m_label.regr_target(v);
-						//this->m_hough_img_prediction[c](zz, v) += dataset[sample_indices_z[k]]->m_label.regr_target_gt(v);
 					}
 				}
 	
 				for(size_t v = 0; v < m_appcontext->num_target_variables; v++){
 					this->m_prediction[c](zz,v) /= (double)sample_indices_z.size();
-					//this->m_hough_img_prediction[c](zz,v) /= (double)sample_indices_z.size();
 				}
 
 			}

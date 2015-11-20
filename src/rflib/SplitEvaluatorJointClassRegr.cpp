@@ -822,7 +822,7 @@ SplitEvaluatorJointClassRegr<Sample, TAppContext>::CalculateCovariance(DataSet<S
 			cov /= (1.0 - SumSqWeight);
 	}
 
-	// return a regularized cov matrix (what the fuck???)
+	// return a regularized cov matrix
 	return cov + 0.05*cov(0, 0) * MatrixXd::Identity(m_appcontext->num_target_variables, m_appcontext->num_target_variables);
 }
 
@@ -852,7 +852,7 @@ SplitEvaluatorJointClassRegr<Sample, TAppContext>::CalculateCovariancePose(DataS
 			cov /= (1.0 - SumSqWeight);
 	}
 
-	// return a regularized cov matrix (what the fuck???)
+	// return a regularized cov matrix
 	return cov + 0.05*cov(0, 0) * MatrixXd::Identity(1, 1);
 }
 
