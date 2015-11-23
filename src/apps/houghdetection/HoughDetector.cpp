@@ -37,12 +37,14 @@ void HoughDetector::DetectList()
     }
 
     if (!m_apphp->quiet){
-	for(size_t zz = 0; zz < m_apphp->num_z; zz++){
-	        std::cout << "Estimated bounding box size: " << avg_bbox_size[zz].height << " x " << avg_bbox_size[zz].width << " (h x w)" << std::endl;
+		for(size_t zz = 0; zz < m_apphp->num_z; zz++){
+		        std::cout << "Estimated bounding box size: " << avg_bbox_size[zz].height << " x " << avg_bbox_size[zz].width << " (h x w)" << std::endl;
+    	}
 	}
-    }
+
     // Run detector for each image
     int full_start = clock();
+
     #pragma omp parallel for
     for (size_t i = 0; i < filenames.size(); i++)
     {
@@ -56,16 +58,13 @@ void HoughDetector::DetectList()
 		resize(img_raw, img, new_size, 0, 0, cv::INTER_LINEAR);
 
         // Storage for Hough Maps
-       std::vector<std::vector<cv::Mat> > hough_maps(m_apphp->test_scales.size());
-       //std::vector<std::vector<std::map<long unsigned int, float> > > hough_pose_maps(m_apphp->test_scales.size());
-       std::vector<std::vector<cv::MatND> > hough_pose_maps(m_apphp->test_scales.size());
-       for (size_t zz = 0; zz < hough_maps.size(); zz++){
-		hough_maps[zz].resize(m_apphp->num_z);
-		hough_pose_maps[zz].resize(m_apphp->num_z);
-       }
+        std::vector<std::vector<cv::Mat> > hough_maps(m_apphp->test_scales.size());
+        std::vector<std::vector<cv::MatND> > hough_pose_maps(m_apphp->test_scales.size());
+        for (size_t zz = 0; zz < hough_maps.size(); zz++) {
+			hough_maps[zz].resize(m_apphp->num_z);
+			hough_pose_maps[zz].resize(m_apphp->num_z);
+        }
 
-
-//cout << "hough_maps.size(): " << m_apphp->num_z << " " << hough_maps.size() << " " << hough_maps[0].size() << endl;
         // Storage for Backprojections
         std::vector<std::vector<std::vector<std::vector<Vote> > > > vBackprojections; // scales, height, width, votes
         if (m_apphp->backproj_bbox_estimation)
@@ -76,20 +75,21 @@ void HoughDetector::DetectList()
         // Voting in the Hough Maps -> this fills the Hough-maps + Backprojections
 		this->DetectPyramid(img, hough_maps, hough_pose_maps, vBackprojections, cvRect(-1, -1, -1, -1), i);
 
-cout << "Voting in the Hough Maps done" << endl;
+		cout << "Voting in the Hough Maps done" << endl;
         // Store Hough Maps to HDD
         if (m_apphp->print_hough_maps)
         {
             for (size_t k = 0; k < hough_maps.size(); k++)
             {
-		for(size_t zz = 0; zz < hough_maps[k].size(); zz++){
+				for(size_t zz = 0; zz < hough_maps[k].size(); zz++)
+				{
                 	cv::Mat tmp;
             		cv::convertScaleAbs(hough_maps[k][zz], tmp, m_apphp->houghmaps_outputscale);
             		tmp.convertTo(tmp, CV_8U);
                 	stringstream buffer;
                 	buffer << m_apphp->path_houghimages << "detect-" << i << "_sc" << k << "_c_" << zz << ".png";
                 	cv::imwrite(buffer.str(), tmp);
-		}
+				}
             }
         }
 
@@ -107,12 +107,11 @@ cout << "Voting in the Hough Maps done" << endl;
             cout << (double)(clock() - tstart)/CLOCKS_PER_SEC/(double)numCPU << " sec" << endl;
         }
     }
+    
     if (!m_apphp->quiet)
         cout << "Full time: " << (double)(clock() - full_start)/CLOCKS_PER_SEC/(double)numCPU << " sec" << endl;
 }
 
-
-//void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv::Mat> >& hough_maps, std::vector<std::vector<std::map<long unsigned int, float> > >& hough_pose_maps,  std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, cv::Rect ROI, int index)
 void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv::Mat> >& hough_maps, std::vector<std::vector<cv::MatND> >& hough_pose_maps,  std::vector<std::vector<std::vector<std::vector<Vote> > > >& vBackprojections, cv::Rect ROI, int index)
 
 {
@@ -123,7 +122,6 @@ void HoughDetector::DetectPyramid(const cv::Mat img, std::vector<std::vector<cv:
         // iterate the scales
         for (size_t i = 0; i < hough_maps.size(); i++)
         {
-		
         	cv::Mat cLevel;
             cv::Size scale_size(int(img.cols*m_apphp->test_scales[i]+0.5), int(img.rows*m_apphp->test_scales[i]+0.5));
         	cv::resize(img, cLevel, scale_size, 0.0, 0.0, cv::INTER_LINEAR);

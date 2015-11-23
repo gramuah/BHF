@@ -18,9 +18,6 @@
 #include "RFCoreParameters.h"
 
 
-//namespace icgrf
-//{
-
 template<typename Sample, typename Label>
 class DataSet
 {
@@ -59,8 +56,6 @@ private:
     // members
     std::vector<LabelledSample<Sample, Label>* > m_samples;
 };
-
-//}
 
 #include "DataSet.cpp"
 

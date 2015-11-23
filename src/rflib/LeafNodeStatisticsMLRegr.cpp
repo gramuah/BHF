@@ -19,19 +19,6 @@ LeafNodeStatisticsMLRegr::~LeafNodeStatisticsMLRegr() { };
 
 void LeafNodeStatisticsMLRegr::Aggregate(DataSet<SampleML, LabelMLRegr>& dataset, int full, int is_final_leaf)
 {
-	// INFO: full is obsolete here ...
-
-	// INFO: we always calculate the mean as leaf node statistics, though other approaches exist!
-
-	// TODO: we could implement other statistics here, e.g., a meanshift, median, etc.
-
-	// INFO: if it is a final leaf node, do not re-calculate the leaf nodes statistics!!!
-	// Reason 1) as we always have calculate the predictions for all intermediate leaf nodes,
-	//         	 there is no need for doing this recalculation, as it is already done, we just
-	//           have to switch the state from Intermediate to Final.
-	// Reason 2) There is also a second, more important reason: If we would recalculate the
-	//           prediction at this point, ARFs won't work anymore, because we would calculate
-	//           the predictions with the pseudo targets and do not add the parent anymore!
 	if (!is_final_leaf)
 	{
 		// reset the target prediction
@@ -51,9 +38,6 @@ void LeafNodeStatisticsMLRegr::Aggregate(DataSet<SampleML, LabelMLRegr>& dataset
 
 void LeafNodeStatisticsMLRegr::Aggregate(LeafNodeStatisticsMLRegr* leafstatsin)
 {
-	// Fuse this leafnode-statistics with the incoming one!
-
-	// if this leaf has no samples yet, set the predictions to zero
 	if (this->m_num_samples == 0)
 		this->m_prediction = Eigen::VectorXd::Zero(this->m_appcontext->num_target_variables);
 
@@ -70,8 +54,6 @@ void LeafNodeStatisticsMLRegr::Aggregate(LeafNodeStatisticsMLRegr* leafstatsin)
 
 void LeafNodeStatisticsMLRegr::UpdateStatistics(LabelledSample<SampleML, LabelMLRegr>* labelled_sample)
 {
-	// if no samples have been routed to this leaf, "initialize" it ...
-	// however, this should never happen!
 	if (m_num_samples == 0)
 	{
 		this->m_prediction = labelled_sample->m_label.regr_target;
@@ -92,11 +74,10 @@ void LeafNodeStatisticsMLRegr::UpdateStatistics(LabelledSample<SampleML, LabelML
 	m_prediction /= (double)m_num_samples;
 }
 
-
 LeafNodeStatisticsMLRegr LeafNodeStatisticsMLRegr::Average(std::vector<LeafNodeStatisticsMLRegr*> leafstats, AppContextML* apphp)
 {
 	// add the predictions from the leafnode stats ...
-	LeafNodeStatisticsMLRegr ret_stats(apphp); // already initialized
+	LeafNodeStatisticsMLRegr ret_stats(apphp);
 	for (size_t i = 0; i < leafstats.size(); i++)
 		ret_stats.m_prediction += leafstats[i]->m_prediction;
 
@@ -107,18 +88,13 @@ LeafNodeStatisticsMLRegr LeafNodeStatisticsMLRegr::Average(std::vector<LeafNodeS
 	return ret_stats;
 }
 
-
 void LeafNodeStatisticsMLRegr::DenormalizeTargetVariables(Eigen::VectorXd mean, Eigen::VectorXd std)
 {
 	throw std::logic_error("ERROR: this method is not implemented yet (LeafNodeStatisticsMLRegr.cpp:133");
 }
 
-
 void LeafNodeStatisticsMLRegr::AddTarget(LeafNodeStatisticsMLRegr* leafnodestats_src)
 {
-	//if (this->m_prediction.size() != leafnodestats_src->m_prediction.size())
-	//	throw std::runtime_error("LeafNodeStatisticsMLRegr: AddTarget gives an error: src and dst targets have different dimensionality!");
-
 	this->m_prediction += leafnodestats_src->m_prediction;
 }
 
@@ -128,7 +104,6 @@ std::vector<double> LeafNodeStatisticsMLRegr::CalculateADFTargetResidual(LabelML
 	// prediction type can be ignored here, as it is clear that we are in a regression task
 	std::vector<double> ret_vec(this->m_prediction.size());
 
-	// calculate: prediction - ground-truth
 	for (size_t v = 0; v < this->m_prediction.rows(); v++)
 		ret_vec[v] = this->m_prediction(v) - gt_label.regr_target_gt(v);
 

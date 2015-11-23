@@ -17,7 +17,7 @@ struct SampleImgPatch
 
 	size_t imgid;
 	std::vector<cv::Mat> features;
-	cv::Mat normalization_feature_mask; // this is for the case of Haar-like features (if a normalization has to be perfomed not over the whole area, e.g., for depth data!)
+	cv::Mat normalization_feature_mask;
 	int x;
 	int y;
 

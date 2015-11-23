@@ -18,9 +18,9 @@ struct LabelMLRegr
 	LabelMLRegr();
 
 	double regr_weight_gt;
-	double regr_weight; // working weight
+	double regr_weight;
 	Eigen::VectorXd regr_target_gt;
-	Eigen::VectorXd regr_target; // working target
+	Eigen::VectorXd regr_target;
 
 	void Save(std::ofstream& out);
 	void Load(std::ifstream& in);

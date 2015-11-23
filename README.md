@@ -3,7 +3,7 @@
 #### REQUIREMENTS:
 
 
-The code is developed and tested under Ubuntu 12.04 and the following libraries are 
+The code is developed and tested under Ubuntu 14.04 trusty and the following libraries are 
 required to build the code:
 + gcc
 + cmake
@@ -16,31 +16,27 @@ required to build the code:
     
 Adapt the corresponding parts in the CMakeLists.txt files in:
             
-      "BHF/src/apps/adf_classification/"
-      "BHF/src/apps/arf_regression/"
+      "BHF/src/apps/houghdetection/"
 
 ---
 
 #### HOW TO BUILD THE CODE:
 
 
-In general, this code package includes two different applications, i.e., two different 
-binaries. One is for classification tasks with ADF and the other for regression tasks with 
-ARF. 
+In general, this code package includes one application referred to Boosted Hought Forests.
 
 To build the code, change the directory to 
 
 ```
-    BHF/bin/*/build
+    BHF/bin/houghdetection/build
 ```
-where "\*" is either "adf_classification" or "arf_regression". 
 
 Then, simply type:
  
 ```
     cmake ../../../src/apps/*
 ```
-to create the Makefile. Again "\*" is either "adf_classification" or "arf_regression". 
+to create the Makefile. Again "\*" is "houghdetection". 
 Finally, type "make" to build the binaries. 
 
 ---
@@ -51,11 +47,11 @@ Finally, type "make" to build the binaries.
 Call:
 
 ```
-    ./icgrf-ml <path-to-configfile>
+    ./boostedHoughtForests <path-to-configfile>
 ```
+Where the path to configuration file is located at "../configs/std.txt"
 
-The config file defines all the settings for the Random Forest and the Alternating Decision/Regression 
-Forest. 
+The config file defines all the settings for the Boosted Hought Forest. 
 
 In general, the different parameters are documented directly in the config file. 
 
@@ -90,3 +86,16 @@ Which methods these classes have to implement can be seen in the interfaces.h fi
 
 Finally, you have to write code for reading data (e.g., from HDD) and fill the
 DataSet<Sample, Label> objects
+
+---
+
+#### CITING
+
+If you make use of this data and software, please cite the following reference in any publications:
+
+@InProceedings{Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015),
+  Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
+  Author                   = {Carolina Redondo Cabrera and Roberto Javier López-Sastre},
+  Booktitle                = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
+  Year                     = {2015}
+}

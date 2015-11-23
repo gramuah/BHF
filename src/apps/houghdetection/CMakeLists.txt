@@ -4,7 +4,7 @@ FILE(TO_CMAKE_PATH "$ENV{ICG_CMAKE_MODULE_PATH}" OT_ICG_CMAKE_MODULE_PATH)
 SET(CMAKE_MODULE_PATH ${OT_CMAKE_MODULE_PATH} ${OT_ICG_CMAKE_MODULE_PATH})
 
 
-PROJECT(ICGRF-houghobject)
+PROJECT(BoostedHoughtForests)
 
 SET( RUN_TEST FALSE )
 
@@ -16,7 +16,6 @@ SET ( CMAKE_CXX_FLAGS "-g" )
 
 
 
-# check out the current host (code by Paul W.)
 find_program(HOSTNAME_CMD NAMES hostname)
 exec_program(${HOSTNAME_CMD} ARGS OUTPUT_VARIABLE HOSTNAME)
 if (${HOSTNAME} MATCHES "graceland*")
@@ -28,7 +27,7 @@ else (${HOSTNAME} MATCHES "graceland*")
 endif (${HOSTNAME} MATCHES "graceland*")
 
 
-# open cv
+# open cv ===================================================================
 IF (ONGRACELANDS)
   SET(OpenCV_INCLUDE_DIR /mount/nas5/schulter/opencv2/opencv_2.4.6.1_installation/usr/local/include)
   SET(OpenCV_LINK_DIRECTORIES /mount/nas5/schulter/opencv2/opencv_2.4.6.1_installation/usr/local/lib)
@@ -70,7 +69,7 @@ ELSE (Boost_FOUND)
   MESSAGE(FATAL_ERROR "Boost was not found.")
 ENDIF (Boost_FOUND)
 
-# OpenMP
+# OpenMP ===================================================================
 FIND_PACKAGE(OpenMP)
 IF (OPENMP_FOUND)
   MESSAGE(STATUS "OpenMP was found.")
@@ -97,8 +96,6 @@ ENDIF (ONGRACELANDS)
 
 # PLATFORM SPECIFIC STUFF
 IF(WIN32)
-
-  # TBA
 
 ELSE(WIN32)
   ADD_DEFINITIONS(-O3 -mtune=native -msse3 -mfpmath=sse -fopenmp ${OpenMP_CXX_FLAGS})
@@ -138,7 +135,7 @@ ADD_LIBRARY ( icg_rf_core
 )
 
 # ADD THE EXECUTABLE
-ADD_EXECUTABLE ( icgrf-hough 
+ADD_EXECUTABLE (boostedHoughtForests
 	${APP_HEADERS}
 	${APP_SOURCES}
 )
@@ -152,7 +149,7 @@ IF(WIN32)
   # TBA
 
 ELSE(WIN32)
-  TARGET_LINK_LIBRARIES(icgrf-hough
+  TARGET_LINK_LIBRARIES(boostedHoughtForests
     icg_rf_core
     config++
     gomp

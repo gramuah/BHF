@@ -9,9 +9,9 @@
 #define SPLITEVALUATORMLREGR_H_
 
 #include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU> // determinant!!!
+#include <eigen3/Eigen/LU>
 #include <vector>
-#include <math.h> // M_PI
+#include <math.h>
 #include "AppContextML.h"
 #include "LabelMLRegr.h"
 #include "SampleML.h"

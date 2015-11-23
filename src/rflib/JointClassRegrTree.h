@@ -18,9 +18,6 @@
 #include "LeafNodeStatisticsJointClassRegr.h"
 #include "AppContext.h"
 
-
-//typedef SplitFunctionImgPatch<uchar, float, TAppContext> TSplitFunctionImgPatch;
-
 template<typename ImgBaseDataType, typename ImgBaseDataIntType, typename LeafNodeStatistics, typename TAppContext>
 class JointClassRegrTree :
 	public RandomTree<SampleImgPatch, LabelJointClassRegr, SplitFunctionImgPatch<ImgBaseDataType, ImgBaseDataIntType, TAppContext>, SplitEvaluatorJointClassRegr<SampleImgPatch, TAppContext>, LeafNodeStatistics, TAppContext>

@@ -15,8 +15,6 @@
 #include "RandomForest.h"
 #include "JointClassRegrTree.h"
 
-//typedef SplitFunctionImgPatch<uchar, float, TAppContext> TSplitFunctionImgPatch;
-
 template<typename TAppContext>
 class JointClassRegrForest : public RandomForest<SampleImgPatch, LabelJointClassRegr, SplitFunctionImgPatch<uchar, float, TAppContext>, SplitEvaluatorJointClassRegr<SampleImgPatch, TAppContext>, LeafNodeStatisticsJointClassRegr<TAppContext>, TAppContext>
 {

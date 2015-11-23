@@ -37,27 +37,14 @@ public:
     virtual vector<LeafNodeStatistics> TestAndAverage(DataSet<Sample, Label>& dataset, int d, Eigen::VectorXd mean, Eigen::VectorXd std);
     virtual LeafNodeStatistics TestAndAverage(LabelledSample<Sample, Label>* sample, int d, Eigen::VectorXd mean, Eigen::VectorXd std);
 
-    // stuff
-    // TODO: this method should be removed and only the second one should be used! [DEPRICATED]
-    void DenormalizeTargetVariables(Eigen::VectorXd mean, Eigen::VectorXd std); // only regression case
-    void DenormalizeTargetVariables(std::vector<Eigen::VectorXd> mean, std::vector<Eigen::VectorXd> std); // joint classification-regression case
+    void DenormalizeTargetVariables(Eigen::VectorXd mean, Eigen::VectorXd std);
+    void DenormalizeTargetVariables(std::vector<Eigen::VectorXd> mean, std::vector<Eigen::VectorXd> std);
 
-    // analysis tools
     vector<vector<Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>* > > GetAllInternalNodes();
     vector<vector<Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>* > > GetAllLeafNodes();
 
     virtual void Save(std::string savepath, Eigen::MatrixXd& latent_variables, int t_offset = 0);
     virtual void Load(std::string loadpath, int t_offset = 0);
-
-
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // THIS METHOD IS NOT GENERIC !!! IT IS NEEDED IN THE SEMPRIORFOREST PROJECT
-    // DO SOMETHING ELSE THERE ... DERIVE THE RF AND IMPLEMENT THIS METHOD THERE!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // clustering the leafnode statistics (only class histograms!) to get a new pseudo-class histogram
-    // (but it only works with LeafnodeStatistics that have a m_class_histogram and m_pseudoclass_histogram
-    // member variable!!!
-    //virtual void CreatePseudoclassHistograms(bool copy_classes_to_pseudoclasses, int num_pseudoclasses, bool soft_assignment);
 
 
 protected:

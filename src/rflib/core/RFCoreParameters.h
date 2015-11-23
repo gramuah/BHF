@@ -124,9 +124,6 @@ public:
     TREE_BAGGING_TYPE::Enum m_bagging_method;
     // - refinement step (in case the <sampling_method> has some out-of-bag samples)
     int m_do_tree_refinement;
-    // - random subsampling for splitting? set to "0" if all data should be used
-    //    set to ">0" if subsampling should be active, the number provided is the number samples used for
-    //                for optimization (randomly chosen)
     int m_num_random_samples_for_splitting;
 
     // ADForest specific stuff
@@ -140,14 +137,7 @@ public:
 	double m_shrinkage;
 
 
-
-
-    // This method just checks for invalid settings
-    void ValidateHyperparameters()
-    {
-        // TODO: implement this ...
-    }
-
+    void ValidateHyperparameters() {}
 
     // Method for printing the Hyperparameters
     friend std::ostream& operator<< (std::ostream &o, const RFCoreParameters &hp)

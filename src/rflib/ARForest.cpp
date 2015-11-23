@@ -41,7 +41,7 @@ ARForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 		this->m_trees[t] = new RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>(this->m_hp, this->m_appcontext);
 		// Define tree as ADF-Tree and set the prediction type!
 		this->m_trees[t]->m_is_ADFTree = true;
-		this->m_trees[t]->m_prediction_type_ADF = 1; // 1 = regression -> in order to add parent predictions to children
+		this->m_trees[t]->m_prediction_type_ADF = 1;
 		this->m_trees[t]->Init(inbag_dataset[t]);
 	}
 
@@ -77,7 +77,6 @@ ARForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 	// tree refinement
 	if (this->m_hp->m_do_tree_refinement)
 	{
-		// CAUTION: here, we have to first reset the targets to targets_gt !!!
 		for (size_t t = 0; t < outbag_dataset.size(); t++)
 			for (size_t s = 0; s < outbag_dataset[t].size(); s++)
 				outbag_dataset[t][s]->m_label.regr_target = outbag_dataset[t][s]->m_label.regr_target_gt;
@@ -94,13 +93,9 @@ ARForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 {
 	for (size_t s = 0; s < dataset.size(); s++)
 	{
-		// INFO: in the case of joint classification-regression, we also compute the residuals for
-		// samples that are not allowed to vote! This has to be considered for evaluating the splitting
-		// functions, etc.
-
 		struct residual sample_residual = forest_predictions[s].CalculateADFTargetResidual(dataset[s]->m_label, forest_predictions[s].m_hough_img_prediction, mean, std, s, 1);
 		
-		dataset[s]->m_label.latent_prediction = sample_residual.bestz;//latent_residual;
+		dataset[s]->m_label.latent_prediction = sample_residual.bestz;
 		if (dataset[s]->m_label.vote_allowed == true){
 
 			latent_variables(dataset[s]->m_label.patch_id, 0) = dataset[s]->m_label.patch_id;
@@ -112,47 +107,53 @@ ARForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 		double norm = 0.0;
 		switch (this->m_hp->m_adf_loss_regression)
 		{
-		case ADF_LOSS_REGRESSION::SQUARED_LOSS:
-			for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
-			{
-				dataset[s]->m_label.regr_target(v) = -1.0 * sample_residual.ret_vec[v];
-			}
-			break;
-		case ADF_LOSS_REGRESSION::ABSOLUTE_LOSS:
-			// calculate the norm of the residual
-			norm = 0.0;
-			for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
-				norm += sample_residual.ret_vec[v] * sample_residual.ret_vec[v];
-			norm = sqrt(norm);
-			// calculate the pseudo targets
-			for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
-			{
-				if (sample_residual.ret_vec[v] < 0.0)
-					dataset[s]->m_label.regr_target(v) = +1.0 * norm;
-				else if (sample_residual.ret_vec[v] > 0.0)
-					dataset[s]->m_label.regr_target(v) = -1.0 * norm;
-				else
-					dataset[s]->m_label.regr_target(v) = 0.0;
-			}
-			break;
-		case ADF_LOSS_REGRESSION::HUBER_LOSS:
-			// calculate the norm of the residual
-			norm = 0.0;
-			for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
-				norm += sample_residual.ret_vec[v] * sample_residual.ret_vec[v];
-			norm = sqrt(norm);
-			for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
-			{
-				if (sample_residual.ret_vec[v] < -this->m_hp->m_Huberloss_delta)
-					dataset[s]->m_label.regr_target(v) = +1.0 * norm;
-				else if (sample_residual.ret_vec[v] > this->m_hp->m_Huberloss_delta)
-					dataset[s]->m_label.regr_target(v) = -1.0 * norm;
-				else
+			case ADF_LOSS_REGRESSION::SQUARED_LOSS:
+				for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
+				{
 					dataset[s]->m_label.regr_target(v) = -1.0 * sample_residual.ret_vec[v];
-			}
-			break;
-		default:
-			throw std::runtime_error("ARForest: Computing pseudo targets doesn't know the loss function");
+				}
+
+				break;
+
+			case ADF_LOSS_REGRESSION::ABSOLUTE_LOSS:
+				// calculate the norm of the residual
+				norm = 0.0;
+				for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
+					norm += sample_residual.ret_vec[v] * sample_residual.ret_vec[v];
+				norm = sqrt(norm);
+				// calculate the pseudo targets
+				for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
+				{
+					if (sample_residual.ret_vec[v] < 0.0)
+						dataset[s]->m_label.regr_target(v) = +1.0 * norm;
+					else if (sample_residual.ret_vec[v] > 0.0)
+						dataset[s]->m_label.regr_target(v) = -1.0 * norm;
+					else
+						dataset[s]->m_label.regr_target(v) = 0.0;
+				}
+
+				break;
+
+			case ADF_LOSS_REGRESSION::HUBER_LOSS:
+				// calculate the norm of the residual
+				norm = 0.0;
+				for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
+					norm += sample_residual.ret_vec[v] * sample_residual.ret_vec[v];
+				norm = sqrt(norm);
+				for (size_t v = 0; v < sample_residual.ret_vec.size(); v++)
+				{
+					if (sample_residual.ret_vec[v] < -this->m_hp->m_Huberloss_delta)
+						dataset[s]->m_label.regr_target(v) = +1.0 * norm;
+					else if (sample_residual.ret_vec[v] > this->m_hp->m_Huberloss_delta)
+						dataset[s]->m_label.regr_target(v) = -1.0 * norm;
+					else
+						dataset[s]->m_label.regr_target(v) = -1.0 * sample_residual.ret_vec[v];
+				}
+
+				break;
+				
+			default:
+				throw std::runtime_error("ARForest: Computing pseudo targets doesn't know the loss function");
 		}
 	}
 }

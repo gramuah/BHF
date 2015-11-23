@@ -1,15 +1,13 @@
 /*
  * DataSetLoaderHoughObject.cpp
+ * 
+ * Author: Carolina Redondo Cabrera, Roberto Javier López-Sastre, Alejandro Véliz Fernández
+ * Institution: GRAM, University of Alcalá, Spain
+ * 
  */
 
 #include "DataLoaderHoughObject.h"
 
-
-// TODO: make this class generic? can we also use it for pose estimation???
-
-
-
-// definition of the static member variable. important for accessing it wihtin a non-static method!!!
 std::vector<std::vector<cv::Mat> > DataLoaderHoughObject::image_feature_data;
 
 
@@ -20,8 +18,6 @@ DataLoaderHoughObject::~DataLoaderHoughObject() { }
 
 DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainData()
 {
-	//DataSet<SampleImgPatch, LabelJointClassRegr> m_trainset;
-
 	// 1) load pre-defined image data
 	vector<MatrixXd> patch_locations;
 	if (m_hp->load_dataset)
@@ -68,20 +64,12 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 			patch_locations.push_back(this->GeneratePatchPositionsFromRegion(img, img_features, m_hp->numPosPatchesPerImage, &vBBox[i], 0));
 
 		// extract image patches
-		vSize(0) = vBBox[i].width;//cols
-            	vSize(1) = vBBox[i].height;//rows
+		vSize(0) = vBBox[i].width;
+    	vSize(1) = vBBox[i].height;
             
 		this->ExtractPatches(m_trainset, img, img_features, patch_locations[i], i, 1, z_targets[i], pose_targets[i], ze_targets[i], vOffsets[i], vSize);
-
-
-//		for (size_t j = 0; j < DataLoaderHoughObject::image_feature_data.size(); j++)
-//		{
-//			cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE );
-//			cv::imshow("Display window", DataLoaderHoughObject::image_feature_data[j][0]);
-//			cv::waitKey(0);
-//		}
-
 	}
+
 	if (!m_hp->quiet)
 		std::cout << std::endl;
 
@@ -90,10 +78,12 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	vFilenames.clear();
 	vBBox.clear();
 	this->LoadNegTrainFile(vFilenames, vBBox);
+
 	if (!m_hp->quiet)
 		std::cout << vFilenames.size() << " negative images available for cropping patches" << std::endl;
 	if (!m_hp->quiet)
 		std::cout << "Progress: ";
+
 	for (size_t i = 0; i < vFilenames.size(); i++)
 	{
 		if (!m_hp->quiet && ((int)i % (int)round((double)vFilenames.size()/10.0)) == 0)
@@ -113,6 +103,7 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 		// extract patches
 		if (!m_hp->load_dataset)
 			patch_locations.push_back(this->GeneratePatchPositionsFromRegion(img, img_features, m_hp->numNegPatchesPerImage, &vBBox[i], 0));
+
 		this->ExtractPatches(m_trainset, img, img_features, patch_locations[n_pos_imgs + i], n_pos_imgs+i, 0, 0, -1, -1);
 	}
 	if (!m_hp->quiet)
@@ -130,13 +121,8 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	this->m_num_classes = 2;
 	this->m_num_target_variables = 2;
 	this->m_num_feature_channels = DataLoaderHoughObject::image_feature_data[0].size();
-
-	// 5) update the sample weights
-	//this->UpdateLatentVariables(m_trainset, z_targets);
-cout << "antes .at<float>(1, 1)" << endl;
-	this->UpdateSampleWeights(m_trainset);
-cout << ".at<float>(1, 1)" << endl;
-	// 6) return filled dataset
+	
+	// return filled dataset
 	return m_trainset;
 }
 
@@ -158,9 +144,6 @@ cv::Mat DataLoaderHoughObject::ReadImageData(std::string imgpath)
 	if (!img.data)
 		throw std::runtime_error("Error reading image:" + imgpath);
 	return img;
-	//	cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE );
-	//	cv::imshow("Display window", img);
-	//	cv::waitKey(0);
 }
 
 
@@ -187,8 +170,6 @@ void DataLoaderHoughObject::ExtractFeatureChannelsObjectDetection(const cv::Mat&
 	fg.ExtractChannel(FC_SOBEL, use_integral_image, img_gray, vImg);
 	fg.ExtractChannel(FC_GRAD2, use_integral_image, img_gray, vImg);
 	fg.ExtractChannel(FC_HOG, use_integral_image, img_gray, vImg);
-	//fg.ExtractChannel(FC_NORM, use_integral_image, img_gray, vImg);
-	//fg.ExtractChannel(FC_GABOR, use_integral_image, img_gray, vImg);
 
 
 	// apply a Gauss filter to all channels
@@ -215,31 +196,6 @@ void DataLoaderHoughObject::ExtractFeatureChannelsObjectDetection(const cv::Mat&
 		for (size_t c = 0; c < num_channels_prior; c++)
 			vImg.erase(vImg.begin());
 	}
-
-//	cv::namedWindow("Image Features", CV_WINDOW_AUTOSIZE );
-//	for (size_t i = 0; i < vImg.size(); i++)
-//	{
-//		for (int y = 0; y < 25; y++)
-//		{
-//			for (int x = 0; x < 25; x++)
-//			{
-//				cout << vImg[0].at<float>(y, x) << " ";
-//			}
-//			cout << endl;
-//		}
-//
-//		cout << "Last entry: " << endl;
-//		cout << vImg[0].at<float>(img.rows, img.cols) << endl;
-//
-//		cv::imshow("Image Features", vImg[i]);
-//
-//		//cv::Mat tmp;
-//		//double scale_fact = (double)vImg[i].at<float>(vImg[i].rows-1, vImg[i].cols-1);
-//		//cv::convertScaleAbs(vImg[i], tmp, 1.0/scale_fact);
-//		//cv::imshow("Image Features", tmp);
-//
-//		cv::waitKey(0);
-//	}
 }
 
 void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& mean, std::vector<VectorXd>& std)
@@ -271,14 +227,12 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 		{
 			// subtract the mean
 			this->m_trainset[i]->m_label.regr_target -= mean[lblIdx];
+
 			//Voting process without normalization
-			//this->m_trainset[i]->m_label.regr_center_gt -= mean[lblIdx];
 			this->m_trainset[i]->m_label.regr_patch_center_norm_gt = this->m_trainset[i]->m_label.regr_patch_center_gt - mean[lblIdx];
 			
 			// add the squared differences, TODO: libEigen3 definitely offers a more easy way to compute this!
 			std[lblIdx] += (this->m_trainset[i]->m_label.regr_target.array() * this->m_trainset[i]->m_label.regr_target.array()).matrix();
-			//for (int t = 0; t < this->m_trainset[i]->m_label.regr_target.rows(); t++)
-			//	std[lblIdx](t) += this->m_trainset[i]->m_label.regr_target(t) * this->m_trainset[i]->m_label.regr_target(t);
 		}
 	}
 	// normalize the squared diffs
@@ -301,19 +255,10 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 		int lblIdx = this->m_trainset[i]->m_label.class_label;
 		if (this->m_trainset[i]->m_label.vote_allowed)
 		{
-
-//debug 
-/*cout << this->m_trainset[i]->m_label.regr_patch_center_gt << endl;
-cout << this->m_trainset[i]->m_label.regr_center_gt << endl;
-cout << this->m_trainset[i]->m_label.img_size << endl;
-int a;
-cin >> a;*/
-
 			this->m_trainset[i]->m_label.regr_target = (this->m_trainset[i]->m_label.regr_target.array() / std[lblIdx].array()).matrix();
 			this->m_trainset[i]->m_label.regr_target_gt =this->m_trainset[i]->m_label.regr_target;
 
 			//Voting process without normalization
-			//this->m_trainset[i]->m_label.regr_center_gt = (this->m_trainset[i]->m_label.regr_center_gt.array() / std[lblIdx].array()).matrix();
 			this->m_trainset[i]->m_label.regr_patch_center_norm_gt = (this->m_trainset[i]->m_label.regr_patch_center_norm_gt.array() / std[lblIdx].array()).matrix();
 		
 		}
@@ -355,22 +300,25 @@ void DataLoaderHoughObject::LoadPosTrainFile(vector<string>& vFilenames, vector<
     ifstream in(m_hp->path_posAnnofile.c_str());
     if (in.is_open())
     {
-	int dummy;
-        in >> size;
-        in >> num_target_dims;
-	in >> num_z;
-cout << size << " " << num_target_dims << " " << num_z << endl;
-        vFilenames.resize(size);
-        vTarget.resize(size);
-        vBBox.resize(size);
-        vSegmasks.resize(size);
-	pose_targets.resize(size);
-	z_targets.resize(size);
-	ze_targets.resize(size);
+		int dummy;
+	    in >> size;
+	    in >> num_target_dims;
+		in >> num_z;
+		cout << size << " " << num_target_dims << " " << num_z << endl;
+	    
+	    vFilenames.resize(size);
+	    vTarget.resize(size);
+	    vBBox.resize(size);
+	    vSegmasks.resize(size);
+		pose_targets.resize(size);
+		z_targets.resize(size);
+		ze_targets.resize(size);
+        
         for (unsigned int i=0; i<size; ++i)
         {
             // Read filename
             in >> vFilenames[i];
+
             // Read bounding box
             in >> vBBox[i].x;
             in >> vBBox[i].y;
@@ -380,26 +328,27 @@ cout << size << " " << num_target_dims << " " << num_z << endl;
             vBBox[i].height -= vBBox[i].y;
 
             VectorXd tmpTarget = VectorXd::Zero(num_target_dims);
-	    double tmpval;
-	    for (int j = 0; j < tmpTarget.size(); j++)
-	    {
-		in >> tmpval;
-		tmpTarget(j) = tmpval;
-	    }
-	   vTarget[i] = tmpTarget;
+		    double tmpval;
+		    for (int j = 0; j < tmpTarget.size(); j++)
+		    {
+				in >> tmpval;
+				tmpTarget(j) = tmpval;
+		    }
 
- 	   // scaling
-	   vBBox[i].x = (int)((double)vBBox[i].x * m_hp->general_scaling_factor);
-	   vBBox[i].y = (int)((double)vBBox[i].y * m_hp->general_scaling_factor);
-	   vBBox[i].width = (int)((double)vBBox[i].width * m_hp->general_scaling_factor);
-	   vBBox[i].height = (int)((double)vBBox[i].height * m_hp->general_scaling_factor);
-	   for (int j = 0; j < vTarget[i].rows(); j++)
-			vTarget[i](j) = round(vTarget[i](j) * m_hp->general_scaling_factor);
+		    vTarget[i] = tmpTarget;
 
-	    in >> pose_targets[i];
-	    in >> ze_targets[i];
-	    in >> z_targets[i]; 
-		
+	 	    // scaling
+		    vBBox[i].x = (int)((double)vBBox[i].x * m_hp->general_scaling_factor);
+		    vBBox[i].y = (int)((double)vBBox[i].y * m_hp->general_scaling_factor);
+		    vBBox[i].width = (int)((double)vBBox[i].width * m_hp->general_scaling_factor);
+		    vBBox[i].height = (int)((double)vBBox[i].height * m_hp->general_scaling_factor);
+		   	
+		   	for (int j = 0; j < vTarget[i].rows(); j++)
+				vTarget[i](j) = round(vTarget[i](j) * m_hp->general_scaling_factor);
+
+		    in >> pose_targets[i];
+		    in >> ze_targets[i];
+		    in >> z_targets[i]; 
 
             // Read the segmasks
             if (m_hp->use_segmasks)
@@ -407,6 +356,7 @@ cout << size << " " << num_target_dims << " " << num_z << endl;
                 stringstream ss;
                 ss << m_hp->path_posImages << "/" << vFilenames[i] << ".txt";
                 ifstream inmasks(ss.str().c_str());
+
                 if (inmasks.is_open())
                 {
                     int num_points;
@@ -567,24 +517,6 @@ Eigen::MatrixXd DataLoaderHoughObject::GeneratePatchPositionsFromRegion(const cv
 		}
 		while (pCount < num_patches);
 	}
-
-	// Show the patch locations and bounding box!
-//	cv::namedWindow("Display window", CV_WINDOW_AUTOSIZE );
-//	cv::imshow("Display window", img);
-//	cv::Point bboxpt1(include->x, include->y);
-//	cv::Point bboxpt2(include->x+include->width, include->y+include->height);
-//	cv::Scalar bboxcolor(255, 0, 0);
-//	cv::rectangle(const_cast<cv::Mat&>(img), bboxpt1, bboxpt2, bboxcolor);
-//	for (int i = 0; i < patch_locations.rows(); i++)
-//	{
-//		cv::Point pt1(patch_locations(i, 0), patch_locations(i, 1));
-//		cv::Point pt2(pt1.x+patch_width, pt1.y+patch_height);
-//		cv::Scalar color(0, 255, 0);
-//		cv::rectangle(const_cast<cv::Mat&>(img), pt1, pt2, color);
-//		cv::imshow("Display window", img);
-//		cv::waitKey(0);
-//	}
-
 	return patch_locations;
 }
 
@@ -644,6 +576,7 @@ void DataLoaderHoughObject::ExtractPatches(DataSet<SampleImgPatch, LabelJointCla
 	int patch_height = m_hp->patch_size[0];
 	Eigen::VectorXd patchCenter = Eigen::VectorXd::Zero(vTarget.rows());
 	int npatches = patch_locations.rows();
+	
 	for (int i = 0; i < npatches; i++)
 	{
 		// patch position
@@ -653,11 +586,13 @@ void DataLoaderHoughObject::ExtractPatches(DataSet<SampleImgPatch, LabelJointCla
 		int datastore_id = static_cast<int>(image_feature_data.size());
 		cv::Rect patch_roi = cv::Rect(pt.x, pt.y, patch_width, patch_height);
 		vector<cv::Mat> patch_features(img_features.size());
+		
 		for (unsigned int c = 0; c < img_features.size(); c++)
 		{
 			cv::Mat roiImg(img_features[c], patch_roi);
 			roiImg.copyTo(patch_features[c]);
 		}
+		
 		// add a COPY of the data to the data-store! -> then, we can release all other data!
 		DataLoaderHoughObject::image_feature_data.push_back(patch_features);
 		SampleImgPatch patchdata;
@@ -672,7 +607,6 @@ void DataLoaderHoughObject::ExtractPatches(DataSet<SampleImgPatch, LabelJointCla
 			temp_mask.setTo(cv::Scalar::all(1.0));
 			cv::integral(temp_mask, patchdata.normalization_feature_mask, CV_32F);
 		}
-
 
 		// create the patch label information
 		Eigen::VectorXd patch_offset_vector = Eigen::VectorXd::Zero(2);
@@ -690,6 +624,7 @@ void DataLoaderHoughObject::ExtractPatches(DataSet<SampleImgPatch, LabelJointCla
 		bool allow_vote = false;
 		if (label == 1) // we only consider binary classification here!
 			allow_vote = true;
+		
 		LabelJointClassRegr patchlabel(1.0, label, z, azimuth, zenith, vTarget, patchCenter, imgSize, img_index, 1.0, patch_offset_vector, allow_vote);
 		double sample_weight = 1.0; // obsolete
 
@@ -702,21 +637,6 @@ void DataLoaderHoughObject::ExtractPatches(DataSet<SampleImgPatch, LabelJointCla
 			this->m_num_neg++;
 	}
 }
-
-/*void DataLoaderHoughObject::UpdateLatentVariables(DataSet<SampleImgPatch, LabelJointClassRegr>& dataset, vector<int> z_targets)
-{
-	for (size_t i = 0; i < dataset.size(); i++)
-	{
-		if (dataset[i]->m_label.class_label == 1)
-		{
-			dataset[i]->m_label.latent_label = z_targets[i];
-			dataset[i]->m_label.latent_prediction = z_targets[i];
-		}else{
-			dataset[i]->m_label.latent_label = 0;
-			dataset[i]->m_label.latent_prediction = 0;
-		}
-	}
-}*/
 
 
 void DataLoaderHoughObject::UpdateSampleWeights(DataSet<SampleImgPatch, LabelJointClassRegr>& dataset)
@@ -743,10 +663,6 @@ void DataLoaderHoughObject::UpdateSampleWeights(DataSet<SampleImgPatch, LabelJoi
 			dataset[i]->m_label.hough_map_patch.resize(this->m_num_z);
 			for (size_t zz = 0; zz < this->m_num_z; zz++)
 				dataset[i]->m_label.hough_map_patch[zz] = cv::Mat::zeros(dataset[i]->m_label.img_size(1), dataset[i]->m_label.img_size(0), CV_32F);
-
-//debug
-//cout << dataset[i]->m_label.img_size(1) << " " << dataset[i]->m_label.img_size(0) << endl;
-//dataset[i]->m_label.hough_map_patch[0].at<float>(1, 1) = 1.0;
 
 		}
 		else

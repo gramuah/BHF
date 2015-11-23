@@ -10,15 +10,13 @@
 
 #include <stdlib.h>
 #include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU> // determinant!!!
+#include <eigen3/Eigen/LU>
 #include "DataSet.h"
 #include "LabelledSample.h"
 #include "RFCoreParameters.h"
 #include <stdexcept>
 
 using namespace Eigen;
-
-
 
 
 namespace NODE_TYPE
@@ -75,7 +73,6 @@ public:
     LeafNodeStatistics* m_leafstats;
 };
 
-// a comparison function
 template<typename Sample, typename Label, typename SplitFunction, typename LeafNodeStatistics, typename AppContext>
 struct NodeCompare
 {

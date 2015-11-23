@@ -1,5 +1,9 @@
 /*
  * DataSetLoaderHoughObject.h
+ * 
+ * Author: Carolina Redondo Cabrera, Roberto Javier López-Sastre, Alejandro Véliz Fernández
+ * Institution: GRAM, University of Alcalá, Spain
+ * 
  */
 
 #ifndef DATASETLOADERHOUGHOBJECT_H_
@@ -55,7 +59,6 @@ private:
 
 	void ExtractPatches(DataSet<SampleImgPatch, LabelJointClassRegr>& dataset, const cv::Mat& img, const std::vector<cv::Mat>& img_features, Eigen::MatrixXd patch_locations, int img_index, int label, int z, double azimuth, double ze, VectorXd vTarget = VectorXd(), VectorXd vSize = VectorXd());
 	void UpdateSampleWeights(DataSet<SampleImgPatch, LabelJointClassRegr>& dataset);
-	//void UpdateLatentVariables(DataSet<SampleImgPatch, LabelJointClassRegr>& dataset, vector<int> z_targets);
 
     // parameters
     AppContextJointClassRegr* m_hp;
@@ -73,4 +76,5 @@ private:
     int m_num_pos;
     int m_num_neg;
 };
+
 #endif /* DATASETLOADERHOUGHOBJECT_H_ */

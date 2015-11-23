@@ -43,7 +43,7 @@ ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 		this->m_trees[t] = new RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>(this->m_hp, this->m_appcontext);
 		// Define tree as ADF-Tree and set the prediction type!
 		this->m_trees[t]->m_is_ADFTree = true;
-		this->m_trees[t]->m_prediction_type_ADF = 0; // 0 = classification
+		this->m_trees[t]->m_prediction_type_ADF = 0;
 		this->m_trees[t]->Init(inbag_dataset[t]);
 	}
 
@@ -61,7 +61,6 @@ ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 		this->UpdateSampleTargetsClassification(dataset, forest_predictions, this->m_hp->m_adf_loss_classification);
 
 		// store the current weight of the samples
-		// CAUTION: also this is specific for the ML-classification task!!! should rather be generic ?!
 		for (size_t s = 0; s < dataset.size(); s++)
 			this->m_sample_weight_progress(s, d) = dataset[s]->m_label.class_weight;
 
@@ -93,7 +92,6 @@ ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 	}
 
 	// store the sample weight progress
-	// CAUTION: also this is specific for the ML-classification task!!! (AppContext)
 	std::ofstream out(this->m_appcontext->path_sampleweight_progress.c_str(), ios::binary);
 	out << this->m_sample_weight_progress << std::endl;
 	out.flush();
@@ -115,7 +113,6 @@ ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 		double sample_conf = sample_conf_vec[0];
 
 		// We can scale the margin at this point to exploit a larger area of the loss function!
-		// TODO: evaluate this parameter!!!
 		double margin_scale_factor = 3.0;
 		sample_conf *= margin_scale_factor;
 
@@ -126,7 +123,6 @@ ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppCo
 			new_weight = (sample_conf < 1.0) ? 1.0 : 0.0;
 			break;
 		case ADF_LOSS_CLASSIFICATION::GRAD_LOGIT:
-			//new_weight = 1.0 / (1.0 / exp(-2.0 * sample_conf));
 			new_weight = exp(-sample_conf) / (1.0 + exp(-sample_conf));
 			break;
 		case ADF_LOSS_CLASSIFICATION::GRAD_EXP:

@@ -21,18 +21,6 @@
 #include "icgrf.h"
 
 
-
-/*
- * Overall TODO:
- * - ADF & ARF have to be implemented in this context here!!!
- * - LeafNodeStatistics: meanshift and hillclimb is not implemented yet,
- *   also the update statistics is not implemented!
- * - Ordinal Split function is not implemented yet!
- * - Allow patch sampling over the gt-bbox, only the center of the patch has to be within the bbox!
- * - Always use Eigen vectors, never use std vectors, we can better calculate with them!!!
- */
-
-
 // typedefs for easier use later
 typedef SplitFunctionImgPatch<uchar, float, AppContextJointClassRegr> TSplitFunctionImgPatch;
 typedef RandomForest<SampleImgPatch, LabelJointClassRegr, TSplitFunctionImgPatch, SplitEvaluatorJointClassRegr<SampleImgPatch, AppContextJointClassRegr>, LeafNodeStatisticsJointClassRegr<AppContextJointClassRegr>, AppContextJointClassRegr> THoughForest;
@@ -51,23 +39,15 @@ void train(AppContextJointClassRegr* apphp)
 		cout << "Load training data ..." << endl;
 	DataLoaderHoughObject mydataloader(apphp);
 	DataSet<SampleImgPatch, LabelJointClassRegr> dataset_train = mydataloader.LoadTrainData();
-//db
-/*for (int kk=0; kk<10; kk++){
-	cout << dataset_train[kk]->m_label.regr_offset << endl;
-	cout << dataset_train[kk]->m_label.regr_target << endl;
-	cout << dataset_train[kk]->m_label.latent_prediction << endl;
-	cout << dataset_train[kk]->m_label.latent_label << endl;}
-int a;
-cin >> a;*/
-////
+
 	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
 	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
+
 	// set some information for splitfunctions etc. in the app-context
 	apphp->num_classes = num_classes;
 	apphp->num_target_variables = num_target_variables;
 	apphp->num_feature_channels = num_feature_channels;
 	apphp->num_z = num_z;
-
 
 	// normalize the regression targets of the training data
 	std::vector<VectorXd> offset_means, offset_stds;
@@ -81,8 +61,6 @@ cin >> a;*/
 		std::cout << num_train_samples << " patches, " << num_classes << " classes, ";
 		std::cout << num_target_variables << "-d regression targets" << std::endl;
 	}
-
-
 
 	// 2) prepare the forest - fill the random forest core settings
 	RFCoreParameters* rfparams = new RFCoreParameters();
@@ -99,26 +77,27 @@ cin >> a;*/
 	rfparams->m_adf_loss_regression = apphp->global_loss_regression;
 	cout << (*rfparams) << endl;
 
-
-
 	// 3) train the forest
 	THoughForest* rf;
 	switch (apphp->method)
 	{
-	case RF_METHOD::HOUGHFOREST:
-		rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	case RF_METHOD::ADHOUGHFOREST:
-		rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	default:
-		throw std::runtime_error("main.cpp: unknown rf-method defined!");
+		case RF_METHOD::HOUGHFOREST:
+			rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		case RF_METHOD::ADHOUGHFOREST:
+			rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		default:
+			throw std::runtime_error("main.cpp: unknown rf-method defined!");
 	}
 
 	MatrixXd latent_variables = MatrixXd::Zero(dataset_train.size(), 2);
+	
 	if (!apphp->quiet)
 		std::cout << "Training ... " << std::endl << std::flush;
+	
 	rf->Train(dataset_train, latent_variables, offset_means[1], offset_stds[1]);//, latent_variables
+	
 	if (!apphp->quiet)
 		cout << "done" << endl << flush;
 
@@ -157,24 +136,24 @@ void houghdetect(AppContextJointClassRegr* apphp)
 	apphp->num_classes = 2;
 	apphp->num_z = 4;
 
-
 	// Loading the forest
 	if (!apphp->quiet)
 		std::cout << "Loading the forest" << std::endl;
 	THoughForest* rf;
 	switch (apphp->method)
 	{
-	case RF_METHOD::HOUGHFOREST:
-		rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	case RF_METHOD::ADHOUGHFOREST:
-		rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	default:
-		throw std::runtime_error("main.cpp: unknown rf-method defined!");
+		case RF_METHOD::HOUGHFOREST:
+			rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		case RF_METHOD::ADHOUGHFOREST:
+			rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		default:
+			throw std::runtime_error("main.cpp: unknown rf-method defined!");
 	}
+
 	rf->Load(apphp->path_trees);
-cout << "Load done" << endl;
+	cout << "Load done" << endl;
 
 	// init the detector
 	HoughDetector hd(rf, apphp);
@@ -199,25 +178,23 @@ void analyze_forest(AppContextJointClassRegr* apphp)
 
 	apphp->num_classes = 2;
 
-
 	// Loading the forest
 	if (!apphp->quiet)
 		std::cout << "Loading the forest" << std::endl;
+	
 	THoughForest* rf;
 	switch (apphp->method)
 	{
-	case RF_METHOD::HOUGHFOREST:
-		rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	case RF_METHOD::ADHOUGHFOREST:
-		rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
-		break;
-	default:
-		throw std::runtime_error("main.cpp: unknown rf-method defined!");
+		case RF_METHOD::HOUGHFOREST:
+			rf = new JointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		case RF_METHOD::ADHOUGHFOREST:
+			rf = new ADJointClassRegrForest<AppContextJointClassRegr>(rfparams, apphp);
+			break;
+		default:
+			throw std::runtime_error("main.cpp: unknown rf-method defined!");
 	}
 	rf->Load(apphp->path_trees);
-
-
 
 	// 5) analyse the trees
 	std::vector<std::vector<Node<SampleImgPatch, LabelJointClassRegr, TSplitFunctionImgPatch, LeafNodeStatisticsJointClassRegr<AppContextJointClassRegr>, AppContextJointClassRegr>* > > all_leafs;
@@ -238,16 +215,12 @@ int main(int argc, char* argv[])
 {
 	// 1) read input arguments
 	std::string path_configfile;
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		std::cout << "Specify a config file" << std::endl;
 		exit(-1);
-	}
-	else
-	{
+	} else {
 		path_configfile = argv[1];
 	}
-
 
 	// 2) read configuration
 	AppContextJointClassRegr apphp;
@@ -256,34 +229,25 @@ int main(int argc, char* argv[])
 	if (!apphp.quiet)
 		std::cout << "Parsed configuration file from " << path_configfile << std::endl;
 
-
-	//try
-	//{
-		switch (apphp.mode)
-		{
-		case 0:
-			train(&apphp);
-			break;
-		case 1:
-			houghdetect(&apphp);
-			break;
-		case 2:
-			train(&apphp);
-			houghdetect(&apphp);
-			break;
-		case 3:
-			analyze_forest(&apphp);
-			break;
-		default:
-			throw std::runtime_error("main.cpp: wrong mode specified!");
-			break;
-		}
-	//}
-	//catch (std::exception& e)
-	//{
-	//	std::cout << "ERROR occured, exception thrown:" << std::endl;
-	//	std::cout << e.what() << std::endl;
-	//}
+	switch (apphp.mode)
+	{
+	case 0:
+		train(&apphp);
+		break;
+	case 1:
+		houghdetect(&apphp);
+		break;
+	case 2:
+		train(&apphp);
+		houghdetect(&apphp);
+		break;
+	case 3:
+		analyze_forest(&apphp);
+		break;
+	default:
+		throw std::runtime_error("main.cpp: wrong mode specified!");
+		break;
+	}
 
 	if (!apphp.quiet)
 		std::cout << "Program should be finished now ..." << std::endl << std::flush;

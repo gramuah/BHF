@@ -16,17 +16,11 @@
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
 BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::BoostedForest(RFCoreParameters* hpin, AppContext* appcontextin) :
 	ADForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>(hpin, appcontextin),
-	RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>(hpin, appcontextin)
-{
-	// should everything be done in the constructor of the RandomForest!
-}
+	RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>(hpin, appcontextin) {}
 
 
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
-BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::~BoostedForest()
-{
-    // Free the trees ... done in base class
-}
+BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::~BoostedForest() {}
 
 
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
@@ -47,10 +41,6 @@ BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, 
 
 		// update sample weights
 		this->UpdateSampleTargetsClassification(dataset, predictions, this->m_hp->m_adf_loss_classification);
-
-		// TODO: select the subset of samples that hold >90% of the weights!
-		// for faster computation!
-		// -> do we then also the make a tree refinement? with the out-of-bag examples???
 
 		// train the trees
 		for (unsigned int d = 0; d < this->m_hp->m_max_tree_depth; d++)
@@ -75,7 +65,6 @@ BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, 
 			tmp_stats[t] = leafnodes[s][t]->m_leafstats;
 
 		ret_stats[s] = LeafNodeStatistics::Sum(tmp_stats, this->m_appcontext);
-		//ret_stats[s] = LeafNodeStatistics::Average(tmp_stats, this->m_appcontext);
 	}
 	return ret_stats;
 }
@@ -91,13 +80,7 @@ BoostedForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, 
 	for (size_t t = 0; t < leafnodes.size(); t++)
 		tmp_stats[t] = leafnodes[t]->m_leafstats;
 	return LeafNodeStatistics::Sum(tmp_stats, this->m_appcontext);
-	//return LeafNodeStatistics::Average(tmp_stats, this->m_appcontext);
 }
-
-
-
-
-
 
 
 #endif /* BOOSTEDFOREST_CPP_ */

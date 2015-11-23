@@ -17,17 +17,7 @@
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::RandomTree(RFCoreParameters* hpin, AppContext* appcontextin) :
 		m_hp(hpin), m_appcontext(appcontextin), m_num_nodes(0), m_num_leafs(0), m_split_store_size(3),
-		m_is_ADFTree(false), m_prediction_type_ADF(-1)
-{
-	// Treetable illustration:
-	// width of table = 3
-	// 0) depth
-	// IF 		node is a splitnode:
-	// 1-2) left and right child node id (within this treetable matrix)
-	// ELSE		node is a leaf node:
-	// 1-2) [0 0]
-	// the id of the nodes is the row in this table, and is also stored in the node object itself!
-}
+		m_is_ADFTree(false), m_prediction_type_ADF(-1) {}
 
 
 
@@ -45,7 +35,7 @@ void
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::Init(DataSet<Sample, Label>& dataset)
 {
     // add the root node to the current tree
-	m_treetable = MatrixXd::Zero(1, m_split_store_size); // depth, childLeftID, childRightID
+	m_treetable = MatrixXd::Zero(1, m_split_store_size);
     m_num_leafs = 1;
     m_num_nodes = 1;
 
@@ -56,8 +46,7 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
     m_pq.push_back(rootnode);
 
     // init the <nodes_in_depth> structure
-    m_nodes_in_depth.resize(m_hp->m_max_tree_depth, 0); // max_tree_depth x 1 vector with all zeros at start
-    // set the number of nodes to be split in the first iteration (i.e., depth 0 has only the rootnode)
+    m_nodes_in_depth.resize(m_hp->m_max_tree_depth, 0);
     m_nodes_in_depth[0] = 1;
 
     if (m_hp->m_debug_on)
@@ -73,8 +62,6 @@ template<typename Sample, typename Label, typename SplitFunction, typename Split
 void
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::Train(int depth)
 {
-    // TODO: proper implementation of this chunk-like training ... switch between the methods!
-
     // Grow the tree
     int num_nodes_in_current_depth = m_nodes_in_depth[depth];
     this->GrowPriority(num_nodes_in_current_depth);
@@ -223,26 +210,11 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
 }
 
 
-
-
-
-
 // PROTECTED methods
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
 void
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::GrowPriority(int num_splits)
 {
-    // This method now works with "chunks"
-    // It uses a priority queue to select the next nodes to be split
-    //   ... the order can be defined (breadth-first, depth-first, etc ...)
-    // Also, this function only splits <num_splits> nodes:
-    //
-    // Eg: - Use breadth-first and num_nodes_in_depth d to grow only nodes in depth d of the tree!
-    //     - Use depth/breadth-first and use max_num_nodes in tree (or any higher number) to train a standard depth/breadth first tree
-    //     - Use depth/breadth-first and use num_splits = 1 to only grow node-by-node ...
-    //
-    // After each chunk, you will return to the HoughForest class -> train function -> there you can control how to grow the tree!!
-
     if (m_hp->m_debug_on)
         cout << "Queue size: " << m_pq.size() <<  " | num_splits = " << num_splits << endl;
 
@@ -294,17 +266,6 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
                     cout << "no splitting function found" << endl << flush;
 
                 // Finalize the leaf node and clean up some stuff
-                // NOTE: for ARFs, we are not allowed to re-estimate the final prediction with the
-				// target values, because these are only the residuals at this point, because we could
-				// also have made a split node!!!
-                //if (this->m_is_ADFTree && this->m_prediction_type_ADF == 1)
-                //	cnode->MakeFinalLeaf(0);
-                //else
-                //	cnode->MakeFinalLeaf();
-
-                // ==> 2014-03-07 <==
-                // No need for this separation! We never re-calculate any statistics in a final leaf node,
-                // because we always compute the full statistics (class + regr) in any intermediate node.
                 cnode->MakeFinalLeaf();
 
                 // delete the split function if no split was found
@@ -342,23 +303,8 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
                 if (m_hp->m_debug_on)
                     cout << "Right child created" << endl << flush;
 
-
-                // INFO: for the case of regression and ADF (ie, ARF), we have to add the
-				// prediction from the leaf to the target values of the two new child nodes!!!
-				// -> additive stage-wise classifier!!!
                 if (this->m_is_ADFTree && this->m_prediction_type_ADF == 1)
                 {
-                	// The following only applies for a joint classification-regression task (e.g., Hough Forests)
-                	// CAUTION: in our old implementation, there was an error: Assume we have a node with
-                	// a few positive and a few negative samples and make a split such that all one
-                	// node has only negative samples. Then, we can't make a regression prediction for the
-                	// all negative node! -> in our old implemenation, the vote was simply set to a zero-vector.
-                	// However, when taking the mean later for calculating the residuals and computing the
-                	// global loss, this distorts the result!!!
-                	// What shall we do then? In general, what shall we do, if a sample falls in a negative
-                	// node and we want to calculate the forest regression prediction?
-                	// In the old implementation, the class probability was completely ignored, and we only
-                	// concentrated on the regression part.
                 	childnode_left->m_leafstats->AddTarget(cnode->m_leafstats);
                 	childnode_right->m_leafstats->AddTarget(cnode->m_leafstats);
                 }
@@ -374,6 +320,7 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
                 // remove the current (intermediate) leaf node ... (only if we do NOT accumulate the confidences)
                 m_num_leafs--;
                 cnode->MakeSplitNode(spf);
+
                 // ... and replace it with a split node.
                 m_treetable(cnode_id, 1) = left_child_id;
                 m_treetable(cnode_id, 2) = right_child_id;
@@ -394,19 +341,9 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
                 cout << "Do not split node " << cnode_id << " due to general restrictions (depth, pureness, ...)" << endl;
 
             // Finalize the leaf node and clean up some stuff
-            // NOTE: for ARFs, we are not allowed to re-estimate the final prediction with the
-            // target values, because these are only the residuals at this point, because we could
-            // also have made a split node!!!
-            //if (this->m_is_ADFTree && this->m_prediction_type_ADF == 1)
-			//	cnode->MakeFinalLeaf(0);
-			//else
-			//	cnode->MakeFinalLeaf();
-
-            // ==> 2014-03-07 <==
-			// No need for this separation! We never re-calculate any statistics in a final leaf node,
-			// because we always compute the full statistics (class + regr) in any intermediate node.
             cnode->MakeFinalLeaf();
         }
+
         // delete the split-evaluator
         delete(spe);
     }
@@ -468,7 +405,6 @@ RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, App
 }
 
 
-
 template<typename Sample, typename Label, typename SplitFunction, typename SplitEvaluator, typename LeafNodeStatistics, typename AppContext>
 void
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::SplitNode(SplitFunction* spf, DataSet<Sample, Label>& dataset_parent, DataSet<Sample, Label>& dataset_leftChild, DataSet<Sample, Label>& dataset_rightChild)
@@ -488,8 +424,6 @@ template<typename Sample, typename Label, typename SplitFunction, typename Split
 void
 RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::GetRandomSampleSubsetForSplitting(DataSet<Sample, Label>& dataset_full, DataSet<Sample, Label>& dataset_subsample, int num_samples)
 {
-	// GENERIC VERSION as we do not have access to class labes, it might be any label space (e.g., regression)
-	// number of samples really used
 	int num_samples_used = min(num_samples, (int)dataset_full.size());
 
 	// make a new dataset with pre-allocated memory!

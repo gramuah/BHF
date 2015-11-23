@@ -14,7 +14,6 @@
 
 
 
-
 template<typename BaseType, typename BaseTypeIntegral, typename AppContext>
 SplitFunctionImgPatch<BaseType, BaseTypeIntegral, AppContext>::SplitFunctionImgPatch(AppContext* appcontextin) : m_appcontext(appcontextin)
 {
@@ -37,54 +36,57 @@ void SplitFunctionImgPatch<BaseType, BaseTypeIntegral, AppContext>::SetRandomVal
 	// get some patch sub-regions
 	switch (m_appcontext->split_function_type)
 	{
-	case SPLITFUNCTION_TYPE::SINGLEPIXELTEST:
-		this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
-		this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
-		break;
-	case SPLITFUNCTION_TYPE::PIXELPAIRTEST:
-		this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
-		this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
-		this->px2.x = randInteger(0, m_appcontext->patch_size[1]-1);
-		this->px2.y = randInteger(0, m_appcontext->patch_size[0]-1);
-		break;
-	case SPLITFUNCTION_TYPE::PIXELPAIRTESTCONDITIONED:
-		this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
-		this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
-		int min_x, max_x, min_y, max_y;
-		max_w = 10;
-		min_x = max(0, px1.x - max_w);
-		max_x = min(m_appcontext->patch_size[1]-1, px1.x + max_w);
-		min_y = max(0, px1.y - max_w);
-		max_y = min(m_appcontext->patch_size[0]-1, px1.y + max_w);
-		this->px2.x = randInteger(min_x, max_x);
-		this->px2.y = randInteger(min_y, max_y);
-		break;
-	case SPLITFUNCTION_TYPE::HAAR_LIKE:
-		min_w = 1;
-		min_h = 1;
-		//max_w = static_cast<int>((double)m_appcontext->patch_size[1]*0.5);
-		//max_h = static_cast<int>((double)m_appcontext->patch_size[0]*0.5);
-		max_w = static_cast<int>((double)m_appcontext->patch_size[1]*0.90);
-		max_h = static_cast<int>((double)m_appcontext->patch_size[0]*0.90);
-		this->re1.width = randInteger(min_w, max_w);
-		this->re1.height = randInteger(min_w, max_w);
-		this->re1.x = randInteger(0, m_appcontext->patch_size[1]-re1.width);
-		this->re1.y = randInteger(0, m_appcontext->patch_size[0]-re1.height);
-		this->re2.width = randInteger(min_w, max_w);
-		this->re2.height = randInteger(min_w, max_w);
-		this->re2.x = randInteger(0, m_appcontext->patch_size[1]-re2.width);
-		this->re2.y = randInteger(0, m_appcontext->patch_size[0]-re2.height);
-		break;
-	case SPLITFUNCTION_TYPE::ORDINAL:
-		this->pxs.resize(m_appcontext->ordinal_split_k);
-		for (size_t k = 0; k < pxs.size(); k++)
-		{
-			pxs[k].x = randInteger(0, m_appcontext->patch_size[1]-1);
-			pxs[k].y = randInteger(0, m_appcontext->patch_size[0]-1);
-		}
-		break;
-	default:
-		throw std::runtime_error("SplitFunction: unknown split-type not implemented");
+		case SPLITFUNCTION_TYPE::SINGLEPIXELTEST:
+			this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
+			this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
+			break;
+
+		case SPLITFUNCTION_TYPE::PIXELPAIRTEST:
+			this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
+			this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
+			this->px2.x = randInteger(0, m_appcontext->patch_size[1]-1);
+			this->px2.y = randInteger(0, m_appcontext->patch_size[0]-1);
+			break;
+
+		case SPLITFUNCTION_TYPE::PIXELPAIRTESTCONDITIONED:
+			this->px1.x = randInteger(0, m_appcontext->patch_size[1]-1);
+			this->px1.y = randInteger(0, m_appcontext->patch_size[0]-1);
+			int min_x, max_x, min_y, max_y;
+			max_w = 10;
+			min_x = max(0, px1.x - max_w);
+			max_x = min(m_appcontext->patch_size[1]-1, px1.x + max_w);
+			min_y = max(0, px1.y - max_w);
+			max_y = min(m_appcontext->patch_size[0]-1, px1.y + max_w);
+			this->px2.x = randInteger(min_x, max_x);
+			this->px2.y = randInteger(min_y, max_y);
+			break;
+
+		case SPLITFUNCTION_TYPE::HAAR_LIKE:
+			min_w = 1;
+			min_h = 1;
+			max_w = static_cast<int>((double)m_appcontext->patch_size[1]*0.90);
+			max_h = static_cast<int>((double)m_appcontext->patch_size[0]*0.90);
+			this->re1.width = randInteger(min_w, max_w);
+			this->re1.height = randInteger(min_w, max_w);
+			this->re1.x = randInteger(0, m_appcontext->patch_size[1]-re1.width);
+			this->re1.y = randInteger(0, m_appcontext->patch_size[0]-re1.height);
+			this->re2.width = randInteger(min_w, max_w);
+			this->re2.height = randInteger(min_w, max_w);
+			this->re2.x = randInteger(0, m_appcontext->patch_size[1]-re2.width);
+			this->re2.y = randInteger(0, m_appcontext->patch_size[0]-re2.height);
+			break;
+
+		case SPLITFUNCTION_TYPE::ORDINAL:
+			this->pxs.resize(m_appcontext->ordinal_split_k);
+			for (size_t k = 0; k < pxs.size(); k++)
+			{
+				pxs[k].x = randInteger(0, m_appcontext->patch_size[1]-1);
+				pxs[k].y = randInteger(0, m_appcontext->patch_size[0]-1);
+			}
+			break;
+
+		default:
+			throw std::runtime_error("SplitFunction: unknown split-type not implemented");
 	}
 
 	// define the feature channels
@@ -181,8 +183,6 @@ void SplitFunctionImgPatch<BaseType, BaseTypeIntegral, AppContext>::Load(std::if
 }
 
 
-
-
 // Private / Helper methods
 template<typename BaseType, typename BaseTypeIntegral, typename AppContext>
 double SplitFunctionImgPatch<BaseType, BaseTypeIntegral, AppContext>::GetResponse(SampleImgPatch& sample)
@@ -198,35 +198,38 @@ double SplitFunctionImgPatch<BaseType, BaseTypeIntegral, AppContext>::GetRespons
 	BaseTypeIntegral area1int, area2int;
 	switch (m_appcontext->split_function_type)
 	{
-	case SPLITFUNCTION_TYPE::SINGLEPIXELTEST:
-		val1 = sample.features[ch1].at<BaseType>(patch_y+px1.y, patch_x+px1.x);
-		return (double)val1;
-		break;
-	case SPLITFUNCTION_TYPE::PIXELPAIRTEST:
-	case SPLITFUNCTION_TYPE::PIXELPAIRTESTCONDITIONED:
-		val1 = sample.features[ch1].at<BaseType>(patch_y+px1.y, patch_x+px1.x);
-		//std::cout << "Accessing: " << patch_y << "+" << px1.y << ", " << patch_x << "+" << px1.x << " | featmap: " << sample.features[ch1].rows << " x " << sample.features[ch1].cols << " | -->" << (int)val1 << std::endl;
-		val2 = sample.features[ch2].at<BaseType>(patch_y+px2.y, patch_x+px2.x);
-		return ((double)val1 - (double)val2);
-		break;
-	case SPLITFUNCTION_TYPE::HAAR_LIKE:
-		val1int = sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x) + sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x+re1.width-1) - sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x) - sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x+re1.width-1);
-		// caution: the normalization-feature-mask always starts at 0,0 and has the size of the patch!
-		area1int = (sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x) + sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x+re1.width-1) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x+re1.width-1));
-		area1int = max((BaseTypeIntegral)1.0, area1int);
-		val2int = sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x) + sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x+re2.width-1) - sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x) - sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x+re2.width-1);
-		// caution: the normalization-feature-mask always starts at 0,0 and has the size of the patch!
-		area2int = (sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x) + sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x+re2.width-1) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x+re2.width-1));
-		area2int = max((BaseTypeIntegral)1.0, area2int);
-		return ((double)val1int / (double)area1int - (double)val2int / (double)area2int);
-		break;
-	case SPLITFUNCTION_TYPE::ORDINAL:
-		throw std::logic_error("SplitFunction (getresponse): Ordinal split functions not implemented yet!");
-		return 0.0;
-		break;
-	default:
-		throw std::runtime_error("SplitFunction (getresponse): unknown split-type not implemented");
-		return 0.0;
+		case SPLITFUNCTION_TYPE::SINGLEPIXELTEST:
+			val1 = sample.features[ch1].at<BaseType>(patch_y+px1.y, patch_x+px1.x);
+			return (double)val1;
+			break;
+
+		case SPLITFUNCTION_TYPE::PIXELPAIRTEST:
+		case SPLITFUNCTION_TYPE::PIXELPAIRTESTCONDITIONED:
+			val1 = sample.features[ch1].at<BaseType>(patch_y+px1.y, patch_x+px1.x);
+			val2 = sample.features[ch2].at<BaseType>(patch_y+px2.y, patch_x+px2.x);
+			return ((double)val1 - (double)val2);
+			break;
+
+		case SPLITFUNCTION_TYPE::HAAR_LIKE:
+			val1int = sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x) + sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x+re1.width-1) - sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x) - sample.features[ch1].at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x+re1.width-1);
+			
+			area1int = (sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x) + sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x+re1.width-1) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y+re1.height-1, patch_x+re1.x) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re1.y, patch_x+re1.x+re1.width-1));
+			area1int = max((BaseTypeIntegral)1.0, area1int);
+			val2int = sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x) + sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x+re2.width-1) - sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x) - sample.features[ch2].at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x+re2.width-1);
+			
+			area2int = (sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x) + sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x+re2.width-1) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y+re2.height-1, patch_x+re2.x) - sample.normalization_feature_mask.at<BaseTypeIntegral>(patch_y+re2.y, patch_x+re2.x+re2.width-1));
+			area2int = max((BaseTypeIntegral)1.0, area2int);
+			return ((double)val1int / (double)area1int - (double)val2int / (double)area2int);
+			break;
+
+		case SPLITFUNCTION_TYPE::ORDINAL:
+			throw std::logic_error("SplitFunction (getresponse): Ordinal split functions not implemented yet!");
+			return 0.0;
+			break;
+			
+		default:
+			throw std::runtime_error("SplitFunction (getresponse): unknown split-type not implemented");
+			return 0.0;
 	}
 }
 

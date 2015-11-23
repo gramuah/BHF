@@ -11,7 +11,6 @@
 #include "ADJointClassRegrForest.h"
 
 
-// TODO: here is an error!!! -> SplitFunctionImgPatch: uchar and float is not necessarily true!!!!
 template<typename TAppContext>
 ADJointClassRegrForest<TAppContext>::ADJointClassRegrForest(RFCoreParameters* hpin, TAppContext* appcontextin) :
 	ADForest<SampleImgPatch, LabelJointClassRegr, SplitFunctionImgPatch<uchar, float, TAppContext>, SplitEvaluatorJointClassRegr<SampleImgPatch, TAppContext>, LeafNodeStatisticsJointClassRegr<TAppContext>, TAppContext>(hpin, appcontextin),
@@ -42,7 +41,7 @@ void ADJointClassRegrForest<TAppContext>::Train(DataSet<SampleImgPatch, LabelJoi
 		if (this->m_appcontext->do_classification_weight_updates || this->m_appcontext->do_regression_weight_updates)
 			this->m_trees[t]->m_is_ADFTree = true;
 		if (this->m_appcontext->do_regression_weight_updates)
-			this->m_trees[t]->m_prediction_type_ADF = 1; // regression ... it is only important if regression is really used!!
+			this->m_trees[t]->m_prediction_type_ADF = 1;
 		this->m_trees[t]->Init(inbag_dataset[t]);
 	}
 
@@ -53,7 +52,6 @@ void ADJointClassRegrForest<TAppContext>::Train(DataSet<SampleImgPatch, LabelJoi
 
 		double current_accuracy = this->EvaluateClassification(dataset, predictions);
 		double current_rmse = this->EvaluateRegression(dataset, predictions, mean, std, d);
-
 
 		int num_nodes_left = 0;
 		for (int t = 0; t < this->m_hp->m_num_trees; t++)
@@ -114,10 +112,9 @@ double ADJointClassRegrForest<TAppContext>::EvaluateRegression(DataSet<SampleImg
 {
 	double squared_error = 0.0;
 	int n_samples_evaluated = 0;
+	
 	for (size_t s = 0; s < dataset.size(); s++)
 	{	
-		// gt target
-
 		if (!dataset[s]->m_label.vote_allowed)
 			continue;
 
@@ -125,14 +122,11 @@ double ADJointClassRegrForest<TAppContext>::EvaluateRegression(DataSet<SampleImg
 		Eigen::VectorXd gt_target_c = Eigen::VectorXd::Zero(2);
 		gt_target_c(0) = dataset[s]->m_label.regr_center_gt(0);
 		gt_target_c(1) = dataset[s]->m_label.regr_center_gt(1);
-		// gt class-label
 		int gt_classlabel = dataset[s]->m_label.gt_class_label;
-
 
 		n_samples_evaluated++;
 
 		// prediction
-		
 		Eigen::VectorXd rf_prediction = predictions[s].m_votes[gt_classlabel][0];
 		Eigen::VectorXd rf_prediction_c = Eigen::VectorXd::Zero(2);
 		rf_prediction_c(0) = predictions[s].m_hough_img_prediction[1](dataset[s]->m_label.latent_prediction-1 ,0);
@@ -145,10 +139,7 @@ double ADJointClassRegrForest<TAppContext>::EvaluateRegression(DataSet<SampleImg
 		rf_prediction_c_norm(1) -= mean(1);
 		rf_prediction_c_norm(1) /= std(1);
 		
-		
 		//calculate RMSE;
-		//double pred_diff = 1.0 / (double)rf_prediction.rows() * (rf_prediction - gt_target).dot(rf_prediction - gt_target);
-		//double pred_diff = 1.0 / (double)rf_prediction_c.rows() * (rf_prediction_c - gt_target_c).dot(rf_prediction_c - gt_target_c);
 		double pred_diff = 1.0 / (double)rf_prediction_c_norm.rows() * (rf_prediction_c_norm - gt_target).dot(rf_prediction_c_norm - gt_target);
 		squared_error += pred_diff;
 	}

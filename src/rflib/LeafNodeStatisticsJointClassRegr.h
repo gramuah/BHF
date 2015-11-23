@@ -9,9 +9,9 @@
 #define LEAFNODESTATISTICSJOINTCLASSREGR_H_
 
 #include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU> // determinant!!!
+#include <eigen3/Eigen/LU>
 #include <vector>
-#include <math.h> // M_PI
+#include <math.h>
 #include <fstream>
 
 #include "Interfaces.h"
@@ -28,11 +28,6 @@ struct residual{
 	std::vector<double> ret_vec;
 	int bestz;	
 };
-
-
-// TODO: for all the updateStats etc methods, we often neglect the weights for regression targets!!!
-// 		 this has to be corrected!
-
 
 template<typename TAppContext>
 class LeafNodeStatisticsJointClassRegr
@@ -86,9 +81,8 @@ public:
 	vector<vector<double> > m_vote_weights;
 	vector<int> patch_id;
 	vector<int> img_id;
-	// this is only necessary for clustering leaf node statistics to get new pseudo targets!
 	vector<double> m_pseudoclass_histogram;
-	vector<vector<Eigen::VectorXd> > m_prediction_centers;//estimated centers into the latent hough space
+	vector<vector<Eigen::VectorXd> > m_prediction_centers;
 	Eigen::VectorXd m_intermediate_prediction;
 
 
@@ -104,7 +98,6 @@ protected:
 	TAppContext* m_appcontext;
 
 };
-
 
 
 #include "LeafNodeStatisticsJointClassRegr.cpp"

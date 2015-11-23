@@ -23,6 +23,7 @@ using std::endl;
 class AppContextML : public AppContext
 {
 public:
+	
 	AppContextML(int in_pred_type)
 	{
 		this->prediction_type = in_pred_type;
@@ -30,7 +31,7 @@ public:
 	virtual ~AppContextML() {}
 
 protected:
-	// implements the abstract base method!
+
 	inline void ValidateHyperparameters()
 	{
 		// validate the general settings in the config file
@@ -40,7 +41,6 @@ protected:
 			cout << "Some general settings missing!" << endl;
 			exit(-1);
 		}
-
 
 		if (!AppContext::ValidateStandardForestSettings())
 		{
@@ -116,7 +116,7 @@ protected:
 	}
 
 	// some member variables
-	int prediction_type; // 0 = classification, 1 = regression, 2 = multiple-instance-learning, ...
+	int prediction_type;
 
 };
 

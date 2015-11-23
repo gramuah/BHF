@@ -96,10 +96,6 @@ Forest:
   // the delta parameter of the Huber loss for the global regression loss
   global_loss_regression_Huber_delta = 0.5;
   
-  // TODO: I think, this is obsolete in the current framework -> regression_vote_accum_method is the same as the leafnode_regression_type
-  // how the votes are accumulated for making a single prediction (used for the weight updates!)
-  // this means how the predictions of all leafnodes are aggregated to a single prediction, this is not the same as the
-  // same as the (regression) prediction model a leafnode itself (see leafnode_regression_type!)
   regression_vote_accum_method = 0; // 0=MEAN, 1=HILLCLIMB
   
   // shrinkage factor
@@ -116,7 +112,6 @@ Forest:
   split_channel_selection = 0;
 
   // mean-shifted votes: k > 0 (!!!) use max. k votes (only relevant during testing, if mean-shift voting is active!)
-  // this is also important now in combination with leafnode_regression_type and with the task POSE_ESTIMATION!
   mean_shift_votes_k = 1;
 
   // beginning with this depth, the forest only evaluates for regression

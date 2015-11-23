@@ -48,48 +48,33 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 			Init_gabor_kernels();
 
 		int old_size = channels.size();
-//		bool multithreaded = true;
-//		if (multithreaded)
-//		{
-//			channels.resize(channels.size() + reals.size());
-//			int num_treads = boost::thread::hardware_concurrency();
-//			boost::thread_pool::executor e(num_treads);
-//			for (unsigned int i = 0; i < reals.size(); i++)
-//			{
-//				e.submit(boost::bind(&FeatureChannelFactory::gabor_transform,
-//						this, src, &channels[old_size + i], useIntegral, i, old_size));
-//			}
-//			e.join_all();
-//		}
-//		else
+
+		for (unsigned int i = 0; i < reals.size(); i++)
 		{
-			for (unsigned int i = 0; i < reals.size(); i++)
+			cv::Mat final;
+			cv::Mat r_mat;
+			cv::Mat i_mat;
+			cv::filter2D(src, r_mat, CV_32F, reals[i]);
+			cv::filter2D(src, i_mat, CV_32F, imags[i]);
+			cv::pow(r_mat, 2, r_mat);
+			cv::pow(i_mat, 2, i_mat);
+			cv::add(i_mat, r_mat, final);
+			cv::pow(final, 0.5, final);
+			cv::normalize(final, final, 0, 1, CV_MINMAX, CV_32F);
+
+			if (useIntegral)
 			{
-				cv::Mat final;
-				cv::Mat r_mat;
-				cv::Mat i_mat;
-				cv::filter2D(src, r_mat, CV_32F, reals[i]);
-				cv::filter2D(src, i_mat, CV_32F, imags[i]);
-				cv::pow(r_mat, 2, r_mat);
-				cv::pow(i_mat, 2, i_mat);
-				cv::add(i_mat, r_mat, final);
-				cv::pow(final, 0.5, final);
-				cv::normalize(final, final, 0, 1, CV_MINMAX, CV_32F);
+				cv::Mat img;
+				final.convertTo(img, CV_8UC1, 255);
 
-				if (useIntegral)
-				{
-					cv::Mat img;
-					final.convertTo(img, CV_8UC1, 255);
-
-					cv::Mat integral_img;
-					cv::integral(img, integral_img, CV_32F);
-					channels.push_back(integral_img);
-				}
-				else
-				{
-					final.convertTo(final, CV_8UC1, 255);
-					channels.push_back(final);
-				}
+				cv::Mat integral_img;
+				cv::integral(img, integral_img, CV_32F);
+				channels.push_back(integral_img);
+			}
+			else
+			{
+				final.convertTo(final, CV_8UC1, 255);
+				channels.push_back(final);
 			}
 		}
 	}
@@ -107,17 +92,6 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		cv::Mat sob_y(src.size(), CV_8U);
 		cv::convertScaleAbs(sob_x_tmp, sob_x, 0.25);
 		cv::convertScaleAbs(sob_y_tmp, sob_y, 0.25);
-
-//		cv::Sobel(src, sob_x_tmp, CV_32F, 1, 0);
-//		cv::Sobel(src, sob_y_tmp, CV_32F, 0, 1);
-//		sob_x_tmp = (sob_x_tmp + 1020.0) / 2040.0;
-//		//cv::normalize(sob_x_tmp, sob_x_tmp, 0, 1, CV_MINMAX, CV_32F);
-//		sob_y_tmp = (sob_y_tmp + 1020.0) / 2040.0;
-//		//cv::normalize(sob_y_tmp, sob_y_tmp, 0, 1, CV_MINMAX, CV_32F);
-//		cv::Mat sob_x;
-//		cv::Mat sob_y;
-//		sob_x_tmp.convertTo(sob_x, CV_8U, 255);
-//		sob_y_tmp.convertTo(sob_y, CV_8U, 255);
 
 		if (useIntegral)
 		{
@@ -256,17 +230,6 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		cv::convertScaleAbs(sob_xx_tmp, sob_xx, 0.25);
 		cv::convertScaleAbs(sob_yy_tmp, sob_yy, 0.25);
 
-		//cv::Sobel(src, sob_xx_tmp, CV_32F, 2, 0);
-		//cv::Sobel(src, sob_yy_tmp, CV_32F, 0, 2);
-		////cv::normalize(sob_xx_tmp, sob_xx_tmp, 0, 1, CV_MINMAX, CV_32F);
-		//sob_xx_tmp = (sob_xx_tmp + 1020.0) / 2040.0;
-		////cv::normalize(sob_yy_tmp, sob_yy_tmp, 0, 1, CV_MINMAX, CV_32F);
-		//sob_yy_tmp = (sob_yy_tmp + 1020.0) / 2040.0;
-		//cv::Mat sob_xx;
-		//cv::Mat sob_yy;
-		//sob_xx_tmp.convertTo(sob_xx, CV_8U, 255);
-		//sob_yy_tmp.convertTo(sob_yy, CV_8U, 255);
-
 		if (useIntegral)
 		{
 			cv::Mat sob_xx_int, sob_yy_int;
@@ -320,19 +283,12 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		cv::Mat sob_y;
 		cv::Sobel(src, sob_x, CV_32F, 1, 0, 3);
 		cv::Sobel(src, sob_y, CV_32F, 0, 1, 3);
-		// min/max values: 4*255 -> 1020
 
 		cv::Mat magnitude;
 		cv::magnitude(sob_x, sob_y, magnitude);
-		// min/max values: 0/1020*sqrt(2)=1442,5
 
 		cv::Mat angle;
 		cv::phase(sob_x, sob_y, angle, true);
-		// min/max values: 0/360
-
-		//double minVal, maxVal;
-		//cv::minMaxIdx(angle, &minVal, &maxVal);
-		//std::cout << minVal << ", " << maxVal << std::endl;
 
 		int nbins = 6;
 		std::vector<float> bin_centers(nbins);
@@ -345,6 +301,7 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		double bin_size = 30.0;
 		float diff, influence;
 		std::vector<cv::Mat> gradlayers_tmp(nbins);
+
 		for (size_t i = 0; i < gradlayers_tmp.size(); i++)
 		{
 			gradlayers_tmp[i] = cv::Mat(src.size(), CV_32F);
@@ -359,25 +316,18 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 				if (o >= 180.0)
 					o -= 180.0;
 
-				//std::cout << x << ", " << y << ": o=" << o << ", m=" << magnitude.at<float>(y, x) << ": " << std::endl;
-
 				// bin the orientation
 				for (size_t i = 0; i < bin_centers.size(); i++)
 				{
 					diff = std::abs(o - bin_centers[i]);
 
-					//std::cout << " - " << diff;
-
 					if (diff < bin_size)
 					{
 						influence = 1.0 - diff/bin_size;
 						gradlayers_tmp[i].at<float>(y, x) = magnitude.at<float>(y, x) * influence;
-						//std::cout << " -> in with inf=" << influence << " -> val=" << gradlayers_tmp[i].at<float>(y, x);
 					}
-					//std::cout << std::endl;
 				}
 
-				// check out the special cases o=[0:15], o=[165:180]
 				if (o < bin_centers[0])
 				{
 					// diff to last entry! circular
@@ -397,11 +347,6 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 			}
 		}
 
-		// min/max values for gradlayers_tmp:
-		// 0 / 1442.5
-		// -> scaling factor: 0.176
-		// However, we don't use the full range! -> other scaling factor: 0.90, the rest is clipped!
-		// empirical estimated from a few images
 		std::vector<cv::Mat> gradlayers(nbins);
 		for (size_t i = 0; i < gradlayers.size(); i++)
 		{
@@ -432,27 +377,11 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		cv::Mat sob_y;
 		cv::Sobel(src, sob_x, CV_32F, 1, 0, 3);
 		cv::Sobel(src, sob_y, CV_32F, 0, 1, 3);
-		// 255 * 4
-		// theory min/max values: -1020/+1020
-		// double minVal = -1020.0, maxVal = +1020.0;
 
 		cv::Mat magnitude_tmp;
 		cv::magnitude(sob_x, sob_y, magnitude_tmp);
-		// new max value: (+/-)1020 * sqrt(2) = 1442,5;
-		// new min value: 0
-
-		// new scaling factor for conversion:
-		// 255 / 1443 = 0.1767 -> 0.176
-		// However, we don't use the full range! -> other scaling factor: 0.90, the rest is clipped!
-		// empirical estimated from a few images
 		cv::Mat magnitude(src.size(), CV_8U);
 		cv::convertScaleAbs(magnitude_tmp, magnitude, 0.90);
-
-
-		//cv::normalize(magnitude_tmp, magnitude_tmp, 0, 1, CV_MINMAX, CV_32F);
-		//cv::Mat magnitude;
-		//magnitude_tmp.convertTo(magnitude, CV_8U, 255);
-
 
 		if (useIntegral)
 		{
@@ -473,6 +402,7 @@ void FeatureGeneratorRGBImage::ExtractChannel(int type, bool useIntegral, const 
 		// src is given ...
 		cv::Mat relloc_x(src.size(), CV_8U);
 		cv::Mat relloc_y(src.size(), CV_8U);
+
 		for (int y = 0; y < src.rows; y++)
 		{
 			for (int x = 0; x < src.cols; x++)
@@ -609,22 +539,16 @@ void FeatureGeneratorRGBImage::CalculateHoGGall(cv::Mat sob_x, cv::Mat sob_y, st
 		{
 			// calculate magnitude
 			float dx = (float)sob_x.at<short>(y, x);
-			dx = dx + (float)copysign(0.000001f, dx); // avoid division by zero
+			dx = dx + (float)copysign(0.000001f, dx);
 			float dy = (float)sob_y.at<short>(y, x);
 			float c_magn = sqrt(dx*dx + dy*dy);
-			//if (c_magn > 255)
-			//	c_magn = 255;
 			magnitude.at<uchar>(y, x) = (uchar)c_magn;
+
 			// calculate orientation
 			float c_orie = (atan(dy/dx) + 3.14159265f/2.0f) * 80;
 			orientation.at<uchar>(y, x) = (uchar)c_orie;
 		}
 	}
-//	cv::namedWindow("Image Features", CV_WINDOW_AUTOSIZE );
-//	cv::imshow("Image Features", magnitude);
-//	cv::waitKey(0);
-//	cv::imshow("Image Features", orientation);
-//	cv::waitKey(0);
 
 
 
@@ -677,11 +601,6 @@ void FeatureGeneratorRGBImage::CalculateHoGGall(cv::Mat sob_x, cv::Mat sob_y, st
 					{
 						bin2 = bin1 < nbins-1 ? bin1+1 : 0;
 					}
-					//if (bin1 == 1 || bin2 == 2)
-					//	std::cout << "juhu" << std::endl;
-					//std::cout << bin1 << ", " << bin2 << ", " << m << ", " << o << ", " << delta << std::endl;
-					//std::cout << (uchar)((1.0-delta)*m) << std::endl;
-					//std::cout << (uchar)(delta*m) << std::endl;
 					bin_values[bin1] += (1.0-delta)*m;
 					bin_values[bin2] += delta*m;
 				}

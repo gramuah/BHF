@@ -125,23 +125,13 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 	for (size_t s = 0; s < dataset.size(); s++)
 	{
 
-		//Voting process
-		//cout << s << " " << dataset[s]->m_label.img_size << endl;
+		// Voting process
 		std::vector<cv::Mat> hough_map;
 		hough_map.resize(m_appcontext->num_z);
 		// reset output image
 		for (int zz=0; zz < m_appcontext->num_z; zz++)
-    			hough_map[zz] = cv::Mat::zeros(dataset[s]->m_label.img_size(1), dataset[s]->m_label.img_size(0), CV_32F); // ! NOT img.type() !!!
+    			hough_map[zz] = cv::Mat::zeros(dataset[s]->m_label.img_size(1), dataset[s]->m_label.img_size(0), CV_32F);
 
-		//#pragma omp critical
-		//{
-		/*if (dataset[s]->m_label.vote_allowed){
-		
-			patchCenter(0) = dataset[s]->m_label.regr_patch_center_gt(0);
-			patchCenter(1) =  dataset[s]->m_label.regr_patch_center_gt(1);
-		}
-	
-		patchClass = dataset[s]->m_label.class_label;*/
 		vector<LeafNodeStatistics*> tmp_stats(leafnodes[s].size());
 		for (size_t t = 0; t < leafnodes[s].size(); t++)
 		{
@@ -149,11 +139,8 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 		}
 
 		ret_stats[s] = LeafNodeStatistics::Average(tmp_stats, dataset[s], d, mean, std, hough_map, this->m_appcontext);
-		
-		//}	
 	}
 	
-	//cout << "TestAndAverage done: " << ret_stats[0].m_hough_img_prediction[1](0,0) << " " << ret_stats[0].m_hough_img_prediction[1](0,1) << endl;
 	return ret_stats;
 }
 
@@ -163,17 +150,12 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 {
 	vector<Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>* > leafnodes;
 	this->Test(sample, leafnodes);
-	//Voting process
+	// Voting process
 	std::vector<cv::Mat> hough_map;
 	// reset output image
 	for (int zz=0; zz < m_appcontext->num_z; zz++)
     		hough_map[zz] = cv::Mat::zeros(sample->m_label.img_size(1), sample->m_label.img_size(0), CV_32F);
 
-	/*Eigen::VectorXd patchCenter = Eigen::VectorXd::Zero(2);
-	patchCenter(0) = sample->m_label.regr_patch_center_gt(0);
-	patchCenter(1) =  sample->m_label.regr_patch_center_gt(1);
-	int patchClass;
-	patchClass = sample->m_label.class_label;*/
 	std::vector<LeafNodeStatistics*> tmp_stats(leafnodes.size());
 	for (size_t t = 0; t < leafnodes.size(); t++)
 		tmp_stats[t] = leafnodes[t]->m_leafstats;
@@ -249,10 +231,6 @@ template<typename Sample, typename Label, typename SplitFunction, typename Split
 void
 RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>::Save(std::string savepath, Eigen::MatrixXd& latent_variables, int t_offset)
 {
-	// This function should be rather called "SaveTrees", as no information on the complete forest is stored
-	// this has the benefits that one can train 100 trees, but then use only a subset for testing, if desired
-	// e.g., for analysis of the parameter #trees
-
 	// check if storage folder exists. If not, try to create the folder.
 	struct stat info;
 	if (stat(savepath.c_str(), &info) != 0)
@@ -281,7 +259,7 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 		tree_savefile_stream << savepath << "tree_" << t + t_offset << ".txt";
 		std::string tree_savefile = tree_savefile_stream.str();
 		std::ofstream out(tree_savefile.c_str(), ios::binary);
-		// TODO: we could try to write a real binary file with out.write(...,...). Maybe the files become smaller
+
 		m_trees[t]->Save(out, latent_variables);
 		out.flush();
 		out.close();
@@ -338,26 +316,27 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 		DataSet<Sample, Label> temp1, temp2;
         switch (m_hp->m_bagging_method)
         {
-        case TREE_BAGGING_TYPE::NONE:
-			dataset_inbag[t] = dataset_full;
-			// no out-of-bag samples
-			break;
-        case TREE_BAGGING_TYPE::SUBSAMPLE_WITH_REPLACEMENT:
-            this->SubsampleWithReplacement(dataset_full, temp1, temp2);
-            dataset_inbag[t] = temp1;
-            dataset_outbag[t] = temp2;
-            break;
-        case TREE_BAGGING_TYPE::FIXED_RANDOM_SUBSET:
-        	fixed_n = min((size_t)3000, dataset_full.size());
-        	rand_inds = randPermSTL((int)dataset_full.size());
-        	dataset_inbag[t].Resize(fixed_n);
-        	for (size_t i = 0; i < fixed_n; i++)
-        		dataset_inbag[t].SetLabelledSample(i, dataset_full[rand_inds[i]]);
-        	// no out-of-bag samples
-        	break;
-        default:
-        	throw std::runtime_error("RandomForest: wrong sampling method defined!");
-            break;
+	        case TREE_BAGGING_TYPE::NONE:
+				dataset_inbag[t] = dataset_full;
+				break;
+
+	        case TREE_BAGGING_TYPE::SUBSAMPLE_WITH_REPLACEMENT:
+	            this->SubsampleWithReplacement(dataset_full, temp1, temp2);
+	            dataset_inbag[t] = temp1;
+	            dataset_outbag[t] = temp2;
+	            break;
+
+	        case TREE_BAGGING_TYPE::FIXED_RANDOM_SUBSET:
+	        	fixed_n = min((size_t)3000, dataset_full.size());
+	        	rand_inds = randPermSTL((int)dataset_full.size());
+	        	dataset_inbag[t].Resize(fixed_n);
+	        	for (size_t i = 0; i < fixed_n; i++)
+	        		dataset_inbag[t].SetLabelledSample(i, dataset_full[rand_inds[i]]);
+	        	break;
+	        	
+	        default:
+	        	throw std::runtime_error("RandomForest: wrong sampling method defined!");
+	            break;
         }
     }
 }

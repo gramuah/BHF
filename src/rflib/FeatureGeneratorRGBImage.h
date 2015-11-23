@@ -23,13 +23,13 @@
 #define FC_MIN_MAX  3
 #define FC_CANNY    4
 #define FC_NORM     5
-#define FC_LAB		6
-#define FC_GRAD2	7 // second derivatives
-#define FC_HOG		8
+#define FC_LAB		  6
+#define FC_GRAD2	  7 // second derivatives
+#define FC_HOG		  8
 #define FC_LUV      9
 #define FC_ORIENTED_GRAD_CHANFTRS 10
 #define FC_GRADMAGN 11
-#define FC_RGB		12
+#define FC_RGB		  12
 #define FC_RELLOC   13 // relative location
 
 

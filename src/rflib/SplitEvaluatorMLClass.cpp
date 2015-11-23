@@ -137,7 +137,7 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThreshold(Da
                 for (int c = 0; c < LCount.size(); c++)
                 {
                     double pL = LCount[c]/LTotal, pR = RCount[c]/RTotal;
-                    if (LCount[c] >= 1e-10) // FUCK YOU rounding errors
+                    if (LCount[c] >= 1e-10)
                         LGini += pL * (1.0 - pL);
                     if (RCount[c] >= 1e-10)
                         RGini += pR * (1.0 - pR);
@@ -148,7 +148,7 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThreshold(Da
                 for (int c = 0; c < LCount.size(); c++)
                 {
                     double pL = LCount[c]/LTotal, pR = RCount[c]/RTotal;
-                    if (LCount[c] >= 1e-10) // FUCK YOU rounding errors
+                    if (LCount[c] >= 1e-10)
                         LGini -= pL * log(pL);
                     if (RCount[c] >= 1e-10)
                         RGini -= pR * log(pR);
@@ -170,16 +170,14 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThreshold(Da
                 if (th_idx < (random_thresholds.size()-1))
                 {
                     th_idx++;
-                    // CAUTION::: THIS HAS TO BE INCLUDED !!!!!!!!!!!??????
-                    r--; // THIS IS IMPORTANT, WE HAVE TO CHECK THE CURRENT SAMPLE AGAIN!!!
+                    r--;
                 }
                 else
                 {
                     stop_search = true;
-                    break; // all thresholds tested
+                    break;
                 }
             }
-            // now, we can go on with the next response ...
         }
 
         if (stop_search)
@@ -232,7 +230,7 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThresholdOrd
 			for (int c = 0; c < LCount.size(); c++)
 			{
 				double pL = LCount[c]/LTotal, pR = RCount[c]/RTotal;
-				if (LCount[c] >= 1e-10) // FUCK YOU rounding errors
+				if (LCount[c] >= 1e-10)
 					LGini += pL * (1.0 - pL);
 				if (RCount[c] >= 1e-10)
 					RGini += pR * (1.0 - pR);
@@ -243,7 +241,7 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThresholdOrd
 			for (int c = 0; c < LCount.size(); c++)
 			{
 				double pL = LCount[c]/LTotal, pR = RCount[c]/RTotal;
-				if (LCount[c] >= 1e-10) // FUCK YOU rounding errors
+				if (LCount[c] >= 1e-10)
 					LGini -= pL * log(pL);
 				if (RCount[c] >= 1e-10)
 					RGini -= pR * log(pR);
@@ -257,7 +255,6 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateEntropyAndThresholdOrd
 			bestThreshold = (double)t;
 			found = true;
 		}
-
 	}
 
     score_and_threshold.first = bestDGini;
@@ -375,7 +372,7 @@ bool SplitEvaluatorMLClass<Sample, TAppContext>::CalculateSpecificLossAndThresho
                 else
                 {
                     stop_search = true;
-                    break; // all thresholds tested
+                    break;
                 }
             }
             // now, we can go on with the next response ...
@@ -395,7 +392,6 @@ double SplitEvaluatorMLClass<Sample, TAppContext>::ComputeLoss(vector<double> p,
 {
     // This is for the GRAD_* losses
     double margin, margin_scale = 2.0;
-    //if (m_appcontext->splitfunction_scalemargin)
 	margin = margin_scale * (p[c]-0.5);
 
     switch (wut)
@@ -426,7 +422,6 @@ double SplitEvaluatorMLClass<Sample, TAppContext>::ComputeLoss(vector<double> p,
         break;
     }
     case ADF_LOSS_CLASSIFICATION::ZERO_ONE:
-        // For the ZERO_ONE loss, the scaling has no influence!
         int max_c = -1;
         double max_p = -1.0;
         for (int i = 0; i < p.size(); i++)

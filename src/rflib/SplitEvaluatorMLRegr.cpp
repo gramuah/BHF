@@ -41,30 +41,33 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateScoreAndThreshold(DataSet<Sample, La
 
 	switch (m_appcontext->splitevaluation_type_regression)
 	{
-	case SPLITEVALUATION_TYPE_REGRESSION::REDUCTION_IN_VARIANCE:
-		throw std::logic_error("SplitEvaluatorMLRegr::Red-In-Var not yet implemented");
-		break;
-	case SPLITEVALUATION_TYPE_REGRESSION::DIFF_ENTROPY_GAUSS:
-		return CalculateMVNPluginAndThreshold(dataset, responses, score_and_threshold);
-		break;
-	case 20: // Diagonal Approx. of MVN-Plugin
-		// TODO: this could be implemented, use the method from above and make a switch:
-		// 		 it's just an element-wise multiplication with the identity matrix!
-		throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
-		return false;
-		break;
-	case 21: // MultiVariateNormal-UniformMinVarianceUnbiasedEstimate, see [Nowozin, ICML'12]
-		throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
-		return false;
-		break;
-	case 22: // 1-NearestNeighbor loss, see [Nowozin, ICML'12]
-		throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
-		return false;
-		break;
-	default:
-		throw std::logic_error("SplitEvaluatorMLRegr::splitfunction_regression_loss_type not defined");
-		return false;
-		break;
+		case SPLITEVALUATION_TYPE_REGRESSION::REDUCTION_IN_VARIANCE:
+			throw std::logic_error("SplitEvaluatorMLRegr::Red-In-Var not yet implemented");
+			break;
+
+		case SPLITEVALUATION_TYPE_REGRESSION::DIFF_ENTROPY_GAUSS:
+			return CalculateMVNPluginAndThreshold(dataset, responses, score_and_threshold);
+			break;
+
+		case 20:
+			throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
+			return false;
+			break;
+
+		case 21:
+			throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
+			return false;
+			break;
+
+		case 22:
+			throw std::logic_error("SplitEvaluatorMLRegr::Not implemented regression loss type");
+			return false;
+			break;
+			
+		default:
+			throw std::logic_error("SplitEvaluatorMLRegr::splitfunction_regression_loss_type not defined");
+			return false;
+			break;
 	}
 }
 
@@ -125,7 +128,7 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateMVNPluginAndThreshold(DataSet<Sample
 			Eigen::VectorXd cst = dataset[responses[r].second]->m_label.regr_target;
 			RSum -= csw * cst;
 			RTotal -= csw;
-			if (RTotal < 0.0) // should never happen
+			if (RTotal < 0.0)
 				RTotal = 0.0;
 			LSum += csw * cst;
 			LTotal += csw;
@@ -136,11 +139,8 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateMVNPluginAndThreshold(DataSet<Sample
 		{
 			if (LTotal > 0.0 && RTotal > 0.0)
 			{
-				// now, we have to check the split quality, this would be a valid split
-
 				// RIGHT: Weighted mean
 				RMean = RSum / RTotal;
-				// weighted co-variance [http://en.wikipedia.org/wiki/Sample_mean_and_sample_covariance#Weighted_samples]
 				RCov = MatrixXd::Zero(m_appcontext->num_target_variables, m_appcontext->num_target_variables);
 				RSqNormTotal = 0.0;
 				for (int s = 0; s < RSamples.size(); s++)
@@ -149,19 +149,19 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateMVNPluginAndThreshold(DataSet<Sample
 					RCov += dataset[RSamples[s]]->m_weight * ((cst - RMean) * (cst - RMean).transpose());
 					RSqNormTotal += pow(dataset[RSamples[s]]->m_weight/RTotal, 2.0);
 				}
-				RCov /= RTotal; // this normalization is important: sum_i w_i = 1 should hold for the weighted covariance
-				if (RSqNormTotal < 1.0) // this happens if only one sample is available!
+				RCov /= RTotal;
+				if (RSqNormTotal < 1.0)
 					RCov /= (1.0 - RSqNormTotal);
 				double RCovDet = RCov.determinant();
-				if (RCovDet <= 0.0) // happens if 2 samples only available -> one eigval=0 -> minimal quantization errors -> -5e-11
+				if (RCovDet <= 0.0)
 					RCovDet = 1e-10;
-				//REntropy = (double)m_num_target_variables/2.0 - (double)m_num_target_variables/2.0 * log(2.0 * M_PI) + 0.5 * log(RCovDet);
 				REntropy = log(RCovDet);
 				if (REntropy <= 0.0)
 					REntropy = 0.0;
 
 				// LEFT: Weighted mean
 				LMean = LSum / LTotal;
+
 				// weighted co-variance
 				LCov = MatrixXd::Zero(m_appcontext->num_target_variables, m_appcontext->num_target_variables);
 				LSqNormTotal = 0.0;
@@ -177,12 +177,11 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateMVNPluginAndThreshold(DataSet<Sample
 					cout << LSqNormTotal << endl;
 				}
 				LCov /= LTotal;
-				if (LSqNormTotal < 1.0) // this happens if only one sample is available!
+				if (LSqNormTotal < 1.0)
 					LCov /= (1.0 - LSqNormTotal);
 				double LCovDet = LCov.determinant();
-				if (LCovDet <= 0.0) // happens if 2 samples only available -> one eigval=0 -> minimal quantization errors -> -5e-11
+				if (LCovDet <= 0.0)
 					LCovDet = 1e-10;
-				//LEntropy = (double)m_num_target_variables/2.0 - (double)m_num_target_variables/2.0 * log(2.0 * M_PI) + 0.5 * log(LCovDet);
 				LEntropy = log(LCovDet);
 				if (LEntropy <= 0.0)
 					LEntropy = 0.0;
@@ -208,13 +207,12 @@ bool SplitEvaluatorMLRegr<Sample>::CalculateMVNPluginAndThreshold(DataSet<Sample
 				if (th_idx < (random_thresholds.size()-1))
 				{
 					th_idx++;
-					// CAUTION::: THIS HAS TO BE INCLUDED !!!!!!!!!!!??????
-					r--; // THIS IS IMPORTANT, WE HAVE TO CHECK THE CURRENT SAMPLE AGAIN!!!
+					r--;
 				}
 				else
 				{
 					stop_search = true;
-					break; // all thresholds tested
+					break;
 				}
 			}
 			// now, we can go on with the next response ...

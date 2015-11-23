@@ -200,7 +200,6 @@ void AppContext::ReadCore(const std::string& confFile)
 		configFile.lookupValue("Forest.regression_split_mode_calculation", this->regression_split_mode_calculation);
 		configFile.lookupValue("Forest.final_discr_weight_update", this->final_discr_weight_update);
 
-		// OBSOLETE ?!?!?
 		if (configFile.exists("Forest.regression_vote_accum_method"))
 		{
 			tmp = configFile.lookup("Forest.regression_vote_accum_method");
@@ -215,9 +214,8 @@ void AppContext::ReadCore(const std::string& confFile)
 		// ###################################################################################
 		// ###################################################################################
 		// Hough Forest specifc stuff (Testing / General)
-		// + Rigid Detector specific stuff (Testing / General)
+		// Rigid Detector specific stuff (Testing / General)
 		// ###################################################################################
-		//configFile.lookupValue("Forest.patch_size", this->patch_size);
 		if (configFile.exists("Forest.patch_size"))
 		{
 			for (int i = 0; i < configFile.lookup("Forest.patch_size").getLength(); i++)
@@ -273,18 +271,12 @@ void AppContext::ReadCore(const std::string& confFile)
 		configFile.lookupValue("Forest.use_scale_interpolation", this->use_scale_interpolation);
 		configFile.lookupValue("Forest.do_structured_prediction", this->do_structured_prediction);
 
-
-
-
-
 		// ###################################################################################
 		// ###################################################################################
 		// Headpose estimation with Hough Forest specifc stuff
 		// ###################################################################################
 		configFile.lookupValue("Forest.poseestim_maxvar_vote", this->poseestim_maxvar_vote);
 		configFile.lookupValue("Forest.poseestim_min_fgprob_vote", this->poseestim_min_fgprob_vote);
-
-
 
 		// ###################################################################################
 		// ###################################################################################
@@ -316,12 +308,9 @@ void AppContext::ReadCore(const std::string& confFile)
 			}
 		}
 
-		// TODO: rename some stuff here, or merge it with the ML parameters!
 		configFile.lookupValue("Data.store_dataset", this->store_dataset);
 		configFile.lookupValue("Data.load_dataset", this->load_dataset);
 		configFile.lookupValue("Data.fixeddatasetpath", this->path_fixedDataset);
-		// defined above in the genearl forest / data section
-		//configFile.lookupValue("Data.sampleweightprogresspath", this->path_sampleweight_progress);
 		configFile.lookupValue("Data.finalsamplelabelingpath", this->path_finalsamplelabeling);
 		configFile.lookupValue("Data.trainprobmapspath", this->path_trainprobmaps);
 
@@ -373,7 +362,7 @@ void AppContext::SetDefaultValues()
 	this->min_split_samples = -1;
 	this->bagging_type = TREE_BAGGING_TYPE::NOTSET;
 	this->do_tree_refinement = -1;
-	this->store_tree_offset = 0; // this is really optional (so if it is not set, then we set it to zero!)
+	this->store_tree_offset = 0;
 
 	this->split_function_type = SPLITFUNCTION_TYPE::NOTSET;
 	this->splitfunction_oblique_k = -1;
@@ -436,7 +425,6 @@ void AppContext::SetDefaultValues()
 	this->traintest_split_save = -1;
 	this->traintest_split_load = -1;
 	this->traintest_split_datapath = "";
-	// this is a real default parameter, so if it isn't specified in config, we use 1.0 (no scaling)
 	this->general_scaling_factor = 1.0;
 
 	this->path_posImages = "";

@@ -20,7 +20,7 @@
 #include <eigen3/Eigen/Core>
 #include <algorithm>
 #include <set>
-#include <unistd.h> // required by Mac OSX??
+#include <unistd.h>
 
 using namespace std;
 using namespace ranlib;
@@ -42,8 +42,6 @@ inline unsigned int getDevRandom()
     return outInt;
 }
 
-
-// TODO: use a platform independent random number generator!
 inline double randDouble()
 {
     static int seedCount = 0;
@@ -62,16 +60,13 @@ inline double randDouble()
 
 inline int randInteger(int minRange, int maxRange)
 {
-    // get a random sample between minRange and maxRange !!!
+    // get a random sample between minRange and maxRange
     maxRange++;
     return min(maxRange-1, (int)(minRange + (double)(maxRange - minRange) * randDouble()));
 }
 
 inline VectorXi randInteger(const int& minRange, const int& maxRange, const int& numSample)
 {
-    // get values between minRange and maxRange !!!
-	// min return = minRange
-	// max return = maxRange (so the maxRange value is included!!!)
     VectorXi out(numSample);
     int range = maxRange - minRange;
     for (int nSamp = 0; nSamp < numSample; nSamp++)
@@ -89,7 +84,6 @@ inline vector<int> randPermSTL(const int& num, const int numSample = -1)
     {
         tmpPair.first = randDouble();
         tmpPair.second = n;
-        //pairs.push_back(tmpPair);
         pairs[n] = tmpPair;
     }
     sort(pairs.begin(), pairs.end());
@@ -105,7 +99,6 @@ inline vector<int> randPermSTL(const int& num, const int numSample = -1)
 }
 
 
-//! Returns the time (ms) elapsed between two calls to this function
 inline double timeIt(int reset)
 {
     static time_t startTime, endTime;
@@ -219,8 +212,6 @@ inline void removeColumnLibEigenMatrixXd(Eigen::MatrixXd& mat, unsigned int colT
 
 inline void pushbackColumnLibEigenMatrixXd(Eigen::MatrixXd& mat, Eigen::MatrixXd newCol)
 {
-	// if the matrix is of size (0,0) and we want to add the first column,
-	// we have the set the appropriate number of rows!
 	unsigned int numRows = mat.rows();
 	if (mat.rows() == 0)
 		mat.conservativeResize(newCol.rows(), Eigen::NoChange);

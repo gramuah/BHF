@@ -68,8 +68,6 @@ void LeafNodeStatisticsMLClass<Sample, TAppContext>::Aggregate(LeafNodeStatistic
 template<typename Sample, typename TAppContext>
 void LeafNodeStatisticsMLClass<Sample, TAppContext>::UpdateStatistics(LabelledSample<Sample, LabelMLClass>* labelled_sample)
 {
-	// if no samples have been routed to this leaf, "initialize" it ...
-	// this should never happen, except for the online case!
 	if (m_num_samples == 0)
 	{
 		// use this single sample for the histogram
@@ -100,7 +98,6 @@ void LeafNodeStatisticsMLClass<Sample, TAppContext>::UpdateStatistics(LabelledSa
 		m_class_histogram[l] /= (double)m_num_samples;
 }
 
-
 template<typename Sample, typename TAppContext>
 LeafNodeStatisticsMLClass<Sample, TAppContext>
 LeafNodeStatisticsMLClass<Sample, TAppContext>::Average(std::vector<LeafNodeStatisticsMLClass<Sample, TAppContext>* > leafstats, TAppContext* apphp)
@@ -130,7 +127,6 @@ void LeafNodeStatisticsMLClass<Sample, TAppContext>::DenormalizeTargetVariables(
 template<typename Sample, typename TAppContext>
 void LeafNodeStatisticsMLClass<Sample, TAppContext>::AddTarget(LeafNodeStatisticsMLClass* leafnodestats)
 {
-	// For classification (ADF) we do nothing, actually, this method isn't even called!
 	throw std::runtime_error("LeafNodeStatisticsMLClass: this function should not be called in this context!");
 }
 
@@ -138,16 +134,8 @@ void LeafNodeStatisticsMLClass<Sample, TAppContext>::AddTarget(LeafNodeStatistic
 template<typename Sample, typename TAppContext>
 std::vector<double> LeafNodeStatisticsMLClass<Sample, TAppContext>::CalculateADFTargetResidual(LabelMLClass gt_label, int prediction_type)
 {
-	// prediction type can be ignored here, as it is clear that we are in a classification task
-
 	std::vector<double> ret_vec(1);
 
-	// OLD VERSION
-	//ret_vec[0] = this->m_class_histogram[gt_label.class_label];
-
-	// NEW VERSION
-	// we now calculate the margin of the classification
-	// m = p(y_gt) - max_{y != y_gt} p(y)
 	double max_conf_not_gt = -1.0;
 	for (int c = 0; c < this->m_class_histogram.size(); c++)
 		if (c != gt_label.gt_class_label)
@@ -155,7 +143,6 @@ std::vector<double> LeafNodeStatisticsMLClass<Sample, TAppContext>::CalculateADF
 				max_conf_not_gt = this->m_class_histogram[c];
 	ret_vec[0] = this->m_class_histogram[gt_label.gt_class_label] - max_conf_not_gt;
 
-	// return it
 	return ret_vec;
 }
 

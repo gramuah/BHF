@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <libconfig.h++>
-//#include <boost/filesystem.hpp>
 #include "icgrf.h"
 
 #include "AppContext.h"
@@ -89,7 +88,6 @@ protected:
 
 
 
-		// check some restrictions on the parameter values!!!
 		if (this->mean_shift_votes_k <= 0)
 		{
 			cout << "ERROR: the k for the mean shift votes has to be > 0" << endl;
@@ -210,7 +208,6 @@ protected:
 			return false;
 		}
 
-
 		if (this->nms_type == NMS_TYPE::NOTSET)
 		{
 			std::cout << "nms type" << std::endl;
@@ -285,25 +282,30 @@ protected:
 		if (this->path_fixedDataset.empty())
 			return false;
 
-
 		if (this->path_posImages.empty())
 			return false;
+
 		if (this->path_posAnnofile.empty())
 			return false;
+
 		if (this->numPosPatchesPerImage == -1)
 			return false;
+
 		if (this->use_segmasks == -1)
 			return false;
 
 		if (this->path_negImages.empty())
 			return false;
+
 		if (this->path_negAnnofile.empty())
 			return false;
+
 		if (this->numNegPatchesPerImage == -1)
 			return false;
 
 		if (this->path_testImages.empty())
 			return false;
+		
 		if (this->path_testFilenames.empty())
 			return false;
 

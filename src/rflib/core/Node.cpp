@@ -47,9 +47,6 @@ Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>::~Node()
 template<typename Sample, typename Label, typename SplitFunction, typename LeafNodeStatistics, typename AppContext>
 int Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>::Split(LabelledSample<Sample, Label>* labelled_sample_in) const
 {
-	//if (this->m_type == NODE_TYPE::FINAL_LEAF)
-	//	throw std::logic_error("Node::trying to split a final leaf node!");
-
 	return this->m_splitfunction->Split(labelled_sample_in->m_sample);
 }
 
@@ -61,7 +58,7 @@ void Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>::MakeSpl
 	this->m_is_leaf = false;
 	this->m_type = NODE_TYPE::SPLIT_NODE;
 	this->m_splitfunction = spfin;
-	// clear the leafnodestatistics ...
+
 	if (this->m_leafstats != NULL)
 	{
 		delete(this->m_leafstats);
@@ -114,9 +111,6 @@ void Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>::Calcual
 template<typename Sample, typename Label, typename SplitFunction, typename LeafNodeStatistics, typename AppContext>
 void Node<Sample, Label, SplitFunction, LeafNodeStatistics, AppContext>::UpdateLeafnodeStatistics(LabelledSample<Sample, Label>* labelled_sample)
 {
-//	if (this->m_type == NODE_TYPE::SPLIT_NODE)
-//		throw std::logic_error("Node: trying to update statistics on a split node");
-
 	this->m_leafstats->UpdateStatistics(labelled_sample);
 }
 

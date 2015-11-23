@@ -125,10 +125,8 @@ protected:
 	// read the config file
 	void ReadCore(const std::string& confFile);
 
-	// set default parameters???
 	virtual void SetDefaultValues();
 
-	// This method checks for invalid or missing settings (has to be implemented in derivatives!)
 	virtual void ValidateHyperparameters() = 0;
 
 	bool ValidateCompleteGeneralPart();
@@ -237,7 +235,6 @@ public:
 
 
 
-    // TODO: obsolete ???
     // scale the distances of the regression node splits
     int scale_regression_distances;
     // type of regression split node mode search: 0=mean, 1=mode(Kontsch)
@@ -331,7 +328,6 @@ public:
     int load_dataset;
     string path_fixedDataset;
     // Output paths
-    // string path_trees; // already defined above
     string path_houghimages;
     string path_bboxes;
     string path_detectionimages;
@@ -340,10 +336,6 @@ public:
     // MIL-specific stuff
     string path_finalsamplelabeling;
     string path_trainprobmaps;
-
-    // stuff for ADFs
-    // string path_sampleweight_progress; // already defined above
-
 
     friend std::ostream& operator<< (std::ostream& o, const AppContext& hp)
     {

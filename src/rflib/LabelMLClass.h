@@ -20,9 +20,9 @@ public:
 	LabelMLClass();
 
 	double class_weight_gt;
-	double class_weight; // working weight!
+	double class_weight;
 	int gt_class_label;
-	int class_label; // working class label!
+	int class_label;
 
 	// I/O stuff
 	void Save(std::ofstream& out);

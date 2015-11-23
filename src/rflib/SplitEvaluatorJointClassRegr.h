@@ -9,9 +9,9 @@
 #define SPLITEVALUATORJOINTCLASSREGR_H_
 
 #include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU> // determinant!!!
+#include <eigen3/Eigen/LU>
 #include <vector>
-#include <math.h> // M_PI
+#include <math.h>
 #include "opencv2/opencv.hpp"
 
 #include "LabelJointClassRegr.h"

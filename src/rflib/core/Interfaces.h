@@ -6,8 +6,6 @@
  */
 
 
-// TODO: this should actually be kept up-to-date ;)
-
 #ifndef INTERFACES_H_
 #define INTERFACES_H_
 
@@ -41,18 +39,6 @@ public:
 	// I/O stuff
 	virtual void Save(std::ofstream& out);
 	virtual void Load(std::ifstream& in);
-
-	// In the specialization, here would be the label information, e.g.:
-	// int class_label;
-
-	// NOTE: for use in the Alternating Decision Forest framework, one has to define weights
-	// for the data samples:
-
-	//double class_weight_gt; -> classification weight (stores the prior class distribution)
-	//double class_weight; -> "working" weight for ADFs (updated according to a global loss)
-	//int gt_class_label; -> class label (doesn't change)
-	//int class_label; // -> a "working" class label (for working with e.g., ambigously labelled data,
-	// Multiple Instance Learning, Semi-Supervised Learning, etc.) However, this is not used here.
 };
 
 
@@ -91,7 +77,7 @@ public:
 	// split methods
 	virtual void SetRandomValues() = 0;
 	virtual void SetThreshold(double th) = 0;
-	virtual void SetSplit(ISplitFunction* spf) = 0; // COPY THE DATA from spf to the current split!
+	virtual void SetSplit(ISplitFunction* spf) = 0;
 	virtual int Split(Sample& sample) = 0;
 	virtual double CalculateResponse(Sample& sample) = 0;
 

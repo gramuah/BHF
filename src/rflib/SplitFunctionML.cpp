@@ -39,8 +39,6 @@ void SplitFunctionML::SetRandomValues()
 	}
 	else if (m_appcontext->split_function_type == SPLITFUNCTION_TYPE::ORDINAL)
 	{
-		// INFO: for the ordinal splits, we also have a parameter K. For ease of less coding,
-		// we simply use the k parameter from the oblique splits ;)
 		m_feature_indices.resize(m_appcontext->splitfunction_oblique_k);
 		for (int i = 0; i < m_feature_indices.size(); i++)
 			m_feature_indices[i] = randInteger(0, m_appcontext->num_feature_channels-1);
@@ -110,8 +108,7 @@ double SplitFunctionML::CalculateResponse(SampleML& sample) const
 	}
 	else if (m_appcontext->split_function_type == SPLITFUNCTION_TYPE::OBLIQUE)
 	{
-		//response = 0.0;
-		response = m_feature_weights[m_feature_weights.size()-1]; // bias term
+		response = m_feature_weights[m_feature_weights.size()-1];
 		for (int i = 0; i < m_feature_indices.size(); i++)
 			response += sample.features[m_feature_indices[i]] * m_feature_weights[i];
 	}
@@ -159,7 +156,7 @@ void SplitFunctionML::Load(std::ifstream& in)
 	for (int i = 0; i < m_feature_indices.size(); i++)
 		in >> m_feature_indices[i];
 	int num_split_weights;
-	in >> num_split_weights; // should of course be the same ...
+	in >> num_split_weights;
 	m_feature_weights.resize(num_split_weights);
 	for (int i = 0; i < m_feature_weights.size(); i++)
 		in >> m_feature_weights[i];

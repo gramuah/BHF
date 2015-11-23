@@ -30,19 +30,6 @@ public:
     void Train(DataSet<Sample, Label>& dataset);
     vector<LeafNodeStatistics> TestAndAverage(DataSet<Sample, Label>& dataset);
     LeafNodeStatistics TestAndAverage(LabelledSample<Sample, Label>* sample);
-
-    // not necessary as long as we don't have learned weights per tree
-    //virtual void Save(std::string savepath, int t_offset = 0);
-    //virtual void Load(std::string loadpath, int t_offset = 0);
-
-protected:
-
-    // parameters
-	//RFCoreParameters* m_hp;
-	//AppContext* m_appcontext;
-
-	//vector<RandomTree<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, AppContext>* > m_trees;
-	//vector<double> m_tree_weights; this is not necessary if only use a shrinkage factor!
 };
 
 
