@@ -93,9 +93,9 @@ DataSet<Sample, Label> objects
 
 If you make use of this data and software, please cite the following reference in any publications:
 
-@InProceedings{Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015),
-  Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
-  Author                   = {Carolina Redondo Cabrera and Roberto Javier López-Sastre},
-  Booktitle                = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
-  Year                     = {2015}
-}
+    @InProceedings{ Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015),
+        Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
+        Author                   = {Carolina Redondo Cabrera and Roberto Javier López-Sastre},
+        Booktitle                = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest (BMVC 2015)},
+        Year                     = {2015}
+    }
