@@ -150,7 +150,10 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 		ret_stats.m_prediction.resize(apphp->num_classes);
 		ret_stats.m_hough_img_prediction.resize(apphp->num_classes);
 		ret_stats.m_vote_weights.resize(apphp->num_classes);
+<<<<<<< HEAD
 
+=======
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		for (size_t c = 0; c < apphp->num_classes; c++)
 		{
 			int accumOffsets=0;
@@ -167,6 +170,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					float w = 1.0 / float(leafstats.size()*leafstats[i]->m_offsets[1].size());
 					accumOffsets += (int)leafstats[i]->m_offsets[1].size();
 					for(size_t of=0; of < (int)leafstats[i]->m_offsets[1].size(); of++){
+<<<<<<< HEAD
 						//denormalization estimated offset				
 						double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
 						double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
@@ -178,12 +182,50 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 						int vote_x = int(sample->m_label.regr_patch_center_gt(0) + aux_x);
 						int vote_y = int(sample->m_label.regr_patch_center_gt(1) + aux_y);
 
+=======
+						
+						int vote_x =0;
+						int vote_y =0;
+
+						//calculate the offsets from the residuals
+						if (d == 0){// root nodes
+							double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
+							double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
+						
+							double aux_x = regr_target_aux_x * std(0);
+							double aux_y = regr_target_aux_y * std(1);
+							aux_x += mean(0);
+							aux_y += mean(1);
+							vote_x = int(sample->m_label.regr_patch_center_gt(0) + aux_x);
+							vote_y = int(sample->m_label.regr_patch_center_gt(1) + aux_y);
+						}else{
+							//denormalization estimated residual				
+							double regr_target_aux_x = leafstats[i]->m_regr_target[1][of](0);
+							double regr_target_aux_y = leafstats[i]->m_regr_target[1][of](1);
+						
+							double aux_x = regr_target_aux_x * std(0);
+							double aux_y = regr_target_aux_y * std(1);
+							aux_x += mean(0);
+							aux_y += mean(1);
+							
+							//estimated offset
+							int off_x = int(leafstats[i]->m_offsets[1][of](0) - aux_x);
+							int off_y = int(leafstats[i]->m_offsets[1][of](1) -aux_y);						
+
+							vote_x = int(sample->m_label.regr_patch_center_gt(0) + off_x);
+							vote_y = int(sample->m_label.regr_patch_center_gt(1) + off_y);
+						}
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 						if (vote_y >= 0 && vote_y < hough_map[0].rows && vote_x >= 0 && vote_x < hough_map[0].cols)
 						{
 							int aux = leafstats[i]->m_latent_prediction[1][of]-1;
 							hough_map[aux].at<float>(vote_y, vote_x) += (float)(w * leafstats[i]->m_vote_weights[1][0]);
 							
 						}
+<<<<<<< HEAD
+=======
+						
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 					}
 				}
 				
@@ -217,6 +259,10 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 						for(int zz=0; zz < apphp->num_z; zz++){
 							for(int v=0; v < apphp->num_target_variables; v++){
 								ret_stats.m_prediction[c](zz,v) += leafstats[i]->m_prediction[c](zz,v);
+<<<<<<< HEAD
+=======
+								
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 							}
 						}
 						
@@ -231,6 +277,7 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 				}
 			}
 			if(c > 0 && sample->m_label.class_label > 0){
+<<<<<<< HEAD
 
 				// Find current max value + location in hough latent space
 	        	cv::Point max_loc_tmp;
@@ -263,6 +310,32 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					ret_stats.m_hough_img_prediction[c](zz,0) = (double)centers(0);
 					ret_stats.m_hough_img_prediction[c](zz,1) = (double)centers(1);
         		}
+=======
+				// Find current max value + location in hough space
+		        	cv::Point max_loc_tmp;
+		        	cv::Point min_loc_tmp;
+		        	double min_val_tmp;
+		        	double max_val_tmp;
+		        
+		        	for (size_t zz = 0; zz < hough_map.size(); zz++)
+        			{
+
+					hough_map[zz] += 0.1*sample->m_label.hough_map_patch[zz];//addTarget (propagate the hough space) 
+ 					sample->m_label.hough_map_patch[zz] = hough_map[zz];//update the hough space
+					Eigen::VectorXd centers = Eigen::VectorXd::Zero(2);
+        					
+					cv::minMaxLoc(hough_map[zz], &min_val_tmp, &max_val_tmp, &min_loc_tmp, &max_loc_tmp);
+					centers(0) = (double)max_loc_tmp.x;
+					centers(1) = (double)max_loc_tmp.y;
+								
+					//center prediction
+					ret_stats.m_hough_img_prediction[c](zz,0) = (double)centers(0);
+					ret_stats.m_hough_img_prediction[c](zz,1) = (double)centers(1);
+
+
+            	
+        			}
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 			}
 
 
@@ -277,6 +350,10 @@ LeafNodeStatisticsJointClassRegr<TAppContext> LeafNodeStatisticsJointClassRegr<T
 					for(int zz=0; zz < apphp->num_z; zz++){
 						for(int v=0; v < apphp->num_target_variables; v++){
 							ret_stats.m_prediction[c](zz,v) /= (double)leafstats.size();
+<<<<<<< HEAD
+=======
+						
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 						}
 					}
 				}
@@ -537,7 +614,11 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 	ret_vec_aux_best_center_norm.resize(gt_label.regr_target.rows(), 0.0);
 	double bestNorm = 1e16;
 	res.bestz = 0;
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 	if (prediction_type == 0) // CLASSIFICATION
 	{
 		double max_conf_not_gt = -1.0;
@@ -558,6 +639,12 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 		if (!gt_label.vote_allowed)
 			return res;
 
+<<<<<<< HEAD
+=======
+		// return the difference between the prediction & ground-truth
+		
+
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		for (size_t v = 0; v < gt_label.regr_target.rows(); v++){
 			ret_vec_aux[v] = m_hough_center_prediction[gt_label.class_label](gt_label.latent_label-1, v) - gt_label.regr_center_gt(v);
 			ret_vec_aux_center[v] = m_hough_center_prediction[gt_label.class_label](gt_label.latent_label-1, v);
@@ -577,6 +664,11 @@ struct residual LeafNodeStatisticsJointClassRegr<TAppContext>::CalculateADFTarge
 				res.ret_vec[v] = ret_vec_estimated_regr_target[v] - gt_label.regr_target_gt(v);
 			}
 		}
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 	}
 	else
 		throw std::logic_error("LeafNodeStats (calc ADF residuals): only class or regr prediction type available!");
@@ -608,7 +700,12 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::AddTarget(LeafNodeStatistics
 
 		if (this->m_votes[c].size() > 0)
 		{
+<<<<<<< HEAD
 			this->m_votes[c][0] += 0.1*leafnodestats_src->m_votes[c][0];
+=======
+	
+			this->m_votes[c][0] += 0.1*leafnodestats_src->m_votes[c][0]; 
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 			this->m_prediction[c] += 0.1*leafnodestats_src->m_prediction[c];
 		}
 	}
@@ -713,6 +810,10 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::Save(std::ofstream& out, Eig
 	out << endl;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 template<typename TAppContext>
 void LeafNodeStatisticsJointClassRegr<TAppContext>::Load(std::ifstream& in)
 {
@@ -751,6 +852,10 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::Load(std::ifstream& in)
 			
 			for (size_t v = 0; v < m_votes[c].size(); v++)
 			{
+<<<<<<< HEAD
+=======
+				
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 				m_votes[c][v] = Eigen::VectorXd::Zero(vote_dim);
 				for (size_t d = 0; d < m_votes[c][v].rows(); d++)
 					in >> m_votes[c][v](d);
@@ -827,15 +932,22 @@ void LeafNodeStatisticsJointClassRegr<TAppContext>::AggregateRegressionTargets(D
 	this->m_latent_prediction.resize(this->m_appcontext->num_classes);
 	this->m_vote_weights.resize(this->m_appcontext->num_classes);
 	this->m_prediction.resize(this->m_appcontext->num_classes);
+<<<<<<< HEAD
 
 
+=======
+	
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 
 	// iterate the classes
 	for (size_t c = 0; c < this->m_votes.size(); c++)
 	{
 
 		this->m_prediction[c] = MatrixXd::Zero(m_appcontext->num_z, m_appcontext->num_target_variables);
+<<<<<<< HEAD
 
+=======
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		for (size_t zz = 0; zz < m_appcontext->num_z; zz++)
 		{
 			vector<int> sample_indices_z;

@@ -125,12 +125,20 @@ RandomForest<Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics, A
 	for (size_t s = 0; s < dataset.size(); s++)
 	{
 
+<<<<<<< HEAD
 		// Voting process
+=======
+		//Voting process
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		std::vector<cv::Mat> hough_map;
 		hough_map.resize(m_appcontext->num_z);
 		// reset output image
 		for (int zz=0; zz < m_appcontext->num_z; zz++)
+<<<<<<< HEAD
     			hough_map[zz] = cv::Mat::zeros(dataset[s]->m_label.img_size(1), dataset[s]->m_label.img_size(0), CV_32F);
+=======
+    			hough_map[zz] = cv::Mat::zeros(dataset[s]->m_label.img_size(1), dataset[s]->m_label.img_size(0), CV_32F); // ! NOT img.type() !!!
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 
 		vector<LeafNodeStatistics*> tmp_stats(leafnodes[s].size());
 		for (size_t t = 0; t < leafnodes[s].size(); t++)

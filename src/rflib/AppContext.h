@@ -300,6 +300,7 @@ public:
 	string path_testlabels;
 	// output paths
 	string path_trees;
+        
 	string path_sampleweight_progress;
 	// data-specific stuff
 	double traintest_split_ratio;
@@ -328,6 +329,10 @@ public:
     int load_dataset;
     string path_fixedDataset;
     // Output paths
+<<<<<<< HEAD
+=======
+   
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
     string path_houghimages;
     string path_bboxes;
     string path_detectionimages;

@@ -61,7 +61,7 @@ void ADJointClassRegrForest<TAppContext>::Train(DataSet<SampleImgPatch, LabelJoi
 			std::cout << "ADRHF: training depth " << d << " ";
 			std::cout << "-> " << num_nodes_left << " nodes left ";
 			std::cout << "-> cur.acc. = " << current_accuracy << ", ";
-			std::cout << "cur.RMSE = " << current_rmse << std::endl;
+			std::cout << "cur.RMSE = " << current_rmse << " pixels " << std::endl;
 		}
 
 		// update the sample weights
@@ -118,10 +118,15 @@ double ADJointClassRegrForest<TAppContext>::EvaluateRegression(DataSet<SampleImg
 		if (!dataset[s]->m_label.vote_allowed)
 			continue;
 
+<<<<<<< HEAD
 		Eigen::VectorXd gt_target = dataset[s]->m_label.regr_target_gt;
 		Eigen::VectorXd gt_target_c = Eigen::VectorXd::Zero(2);
 		gt_target_c(0) = dataset[s]->m_label.regr_center_gt(0);
 		gt_target_c(1) = dataset[s]->m_label.regr_center_gt(1);
+=======
+		Eigen::VectorXd gt_target = dataset[s]->m_label.regr_offset;
+		
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		int gt_classlabel = dataset[s]->m_label.gt_class_label;
 
 		n_samples_evaluated++;
@@ -129,17 +134,23 @@ double ADJointClassRegrForest<TAppContext>::EvaluateRegression(DataSet<SampleImg
 		// prediction
 		Eigen::VectorXd rf_prediction = predictions[s].m_votes[gt_classlabel][0];
 		Eigen::VectorXd rf_prediction_c = Eigen::VectorXd::Zero(2);
-		rf_prediction_c(0) = predictions[s].m_hough_img_prediction[1](dataset[s]->m_label.latent_prediction-1 ,0);
-		rf_prediction_c(1) = predictions[s].m_hough_img_prediction[1](dataset[s]->m_label.latent_prediction-1 ,1);
+		rf_prediction_c(0) = predictions[s].m_hough_img_prediction[1](dataset[s]->m_label.latent_label-1 ,0);
+		rf_prediction_c(1) = predictions[s].m_hough_img_prediction[1](dataset[s]->m_label.latent_label-1 ,1);
 		Eigen::VectorXd rf_prediction_c_norm = Eigen::VectorXd::Zero(2);
-		Eigen::VectorXd rf_prediction_off = Eigen::VectorXd::Zero(2);	
 		rf_prediction_c_norm = rf_prediction_c - dataset[s]->m_label.regr_patch_center_gt;	
+<<<<<<< HEAD
 		rf_prediction_c_norm(0) -= mean(0);
 		rf_prediction_c_norm(0) /= std(0);
 		rf_prediction_c_norm(1) -= mean(1);
 		rf_prediction_c_norm(1) /= std(1);
 		
 		//calculate RMSE;
+=======
+				
+		
+		//calculate RMSE;
+		
+>>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		double pred_diff = 1.0 / (double)rf_prediction_c_norm.rows() * (rf_prediction_c_norm - gt_target).dot(rf_prediction_c_norm - gt_target);
 		squared_error += pred_diff;
 	}
