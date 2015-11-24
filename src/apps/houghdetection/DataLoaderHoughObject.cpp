@@ -121,15 +121,11 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	this->m_num_classes = 2;
 	this->m_num_target_variables = 2;
 	this->m_num_feature_channels = DataLoaderHoughObject::image_feature_data[0].size();
-<<<<<<< HEAD
 	
-	// return filled dataset
-=======
-
 	// 5) update the sample weights
 	this->UpdateSampleWeights(m_trainset);
-	// 6) return filled dataset
->>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
+	
+	// return filled dataset
 	return m_trainset;
 }
 
@@ -240,10 +236,6 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 			
 			// add the squared differences, TODO: libEigen3 definitely offers a more easy way to compute this!
 			std[lblIdx] += (this->m_trainset[i]->m_label.regr_target.array() * this->m_trainset[i]->m_label.regr_target.array()).matrix();
-<<<<<<< HEAD
-=======
-			
->>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 		}
 	}
 	// normalize the squared diffs
@@ -266,19 +258,10 @@ void DataLoaderHoughObject::NormalizeRegressionTargets(std::vector<VectorXd>& me
 		int lblIdx = this->m_trainset[i]->m_label.class_label;
 		if (this->m_trainset[i]->m_label.vote_allowed)
 		{
-<<<<<<< HEAD
-=======
-
-
->>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 			this->m_trainset[i]->m_label.regr_target = (this->m_trainset[i]->m_label.regr_target.array() / std[lblIdx].array()).matrix();
 			this->m_trainset[i]->m_label.regr_target_gt =this->m_trainset[i]->m_label.regr_target;
 
 			//Voting process without normalization
-<<<<<<< HEAD
-=======
-			
->>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
 			this->m_trainset[i]->m_label.regr_patch_center_norm_gt = (this->m_trainset[i]->m_label.regr_patch_center_norm_gt.array() / std[lblIdx].array()).matrix();
 		
 		}
@@ -320,7 +303,6 @@ void DataLoaderHoughObject::LoadPosTrainFile(vector<string>& vFilenames, vector<
     ifstream in(m_hp->path_posAnnofile.c_str());
     if (in.is_open())
     {
-<<<<<<< HEAD
 		int dummy;
 	    in >> size;
 	    in >> num_target_dims;
@@ -335,19 +317,6 @@ void DataLoaderHoughObject::LoadPosTrainFile(vector<string>& vFilenames, vector<
 		z_targets.resize(size);
 		ze_targets.resize(size);
         
-=======
-	int dummy;
-        in >> size;
-        in >> num_target_dims;
-	in >> num_z;
-        vFilenames.resize(size);
-        vTarget.resize(size);
-        vBBox.resize(size);
-        vSegmasks.resize(size);
-	pose_targets.resize(size);
-	z_targets.resize(size);
-	ze_targets.resize(size);
->>>>>>> a852804173915d67e48d70c4aee0b141323b9b7b
         for (unsigned int i=0; i<size; ++i)
         {
             // Read filename

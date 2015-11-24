@@ -171,7 +171,6 @@ void AppContext::ReadCore(const std::string& confFile)
 		// General Forest / Data stuff
 		// ###################################################################################
 		configFile.lookupValue("Data.path_trees", this->path_trees);
-                configFile.lookupValue("Data.path_bboxes", this->path_bboxes);
 		configFile.lookupValue("Data.path_sampleweight_progress", this->path_sampleweight_progress);
 
 		// Dataset parameters
@@ -421,7 +420,6 @@ void AppContext::SetDefaultValues()
 	this->path_testdata = "";
 	this->path_testlabels = "";
 	this->path_trees = "";
-        this->path_bboxes = "";
 	this->path_sampleweight_progress = "";
 	this->traintest_split_ratio = -1;
 	this->traintest_split_save = -1;
