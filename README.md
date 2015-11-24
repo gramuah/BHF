@@ -69,24 +69,15 @@ CHECK THE DIRECTORIES!!!
 
 ---
 
-#### HOW TO USE THE CODE:
-The Random Forest (RF) core is a generic implementation with templates (see folder ../../rflib/)
-On the application site, you have to write the main.cpp code, i.e., the work flow of your application
-and how the data is read.
+#### HOW TO CHECK RESULTS:
+There is another folder called "BHF/scipts_results" which contains the script to plot the three graphics writen in Matlab.
 
-Then, you can instantiate a RF and an ADF with templates:
-Sample, Label, SplitFunction, SplitEvaluator, LeafNodeStatistics and AppContext
-+ The Sample class defines how your data looks like
-+ The Label class defines how the labels to your data look like
-+ The SplitFunction class knows how to make splits with the given data
-+ The SplitEvaluator class knows how to evaluate a potential split
-+ The LeafNodeStatistics class has to aggregate all the incoming data (Sample and Label)
-     in a leaf node, i.e., it defines the prediction of a leaf node.
-Which methods these classes have to implement can be seen in the interfaces.h file (../../rflib)
+To check your results with this graphics simply run the script "eval_results.m" giving the folder where bboxes are contained. 
 
-Finally, you have to write code for reading data (e.g., from HDD) and fill the
-DataSet<Sample, Label> objects
-
+For example,
+```
+	eval_results('../bindata');
+```
 ---
 
 #### CITING
