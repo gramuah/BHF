@@ -1,2 +1,0 @@
-/home/alexv/Documents/Repositories/BHF/bin/houghdetection/build/CMakeFiles/boostedHoughtForests.dir
-/home/alexv/Documents/Repositories/BHF/bin/houghdetection/build/CMakeFiles/icg_rf_core.dir
