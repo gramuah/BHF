@@ -4,7 +4,7 @@ General:
   method = 7;
   
   // mode: 0=train, 1=detect, 2=train&detect, 3=analyze
-  mode = 0;
+  mode = 2;
   
   // quiet mode (no outputs)
   quiet = 0;
