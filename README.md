@@ -6,6 +6,7 @@ Boosted Hough Forest (BHF) is a framework for object detection and pose estimati
 
 This is a repository with an implementation of the BHF model described in our BMVC 2015 paper.
 
+We provide the codes and data needed to reproduce the experiments with the [Weizmann Cars ViewPoint dataset](http://www.wisdom.weizmann.ac.il/~vision/WCVP/index.html), which is included in the repository.
 
 
 #### CITING
