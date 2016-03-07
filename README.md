@@ -26,6 +26,16 @@ If you make use of this data and software, please cite the following references 
         Author                   = {Samuel Schulter and Christian Leistner and Paul Wohlhart and Peter M. Roth and Horst Bischof},
         Booktitle                = {ICCV},
         Year                     = {2013}
+	}	
+	
+	@article{Glasner2012,
+	Title			= {Viewpoint-aware object detection and continuous pose estimation},
+	Author                  = {Glasner, D. and Galun, M. and Alpert, S. and Basri, R. and Shakhnarovich, G.},
+	Journal                 = {Image and Vision Computing},
+	Year                    = {2012},
+	Number                  = {12},
+	Pages                   = {923--933},
+	Volume                  = {30}
 	}
 
 
