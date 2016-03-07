@@ -68,10 +68,21 @@ To build the code, just follow these instructions:
 
 ---
 
-#### HOW TO USE THE BINARIES:
+#### HOW TO RUN THE BHF:
 
+We use config files to communicate with the BHF. These config files are located at "../configs".
 
-Call:
+It is very simple to work with them, the different parameters are documented directly in the config file.
+
+In order to reproduce the experiments in our paper these are the steps to follow:
+
++  Train the BHF model.
+
+```Shell
+   ./boostedHoughtForests <path-to-configfile>
+```
++ TODO ...
+
 
 ```
     ./boostedHoughtForests <path-to-configfile>

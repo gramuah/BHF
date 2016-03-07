@@ -1,10 +1,10 @@
 General:
 {
   // Method: 5 = Hough Forest, 6 = Boosted Hough Forest, 7 = AD Hough Forest
-  method = 7;
+  method = 6;
   
   // mode: 0=train, 1=detect, 2=train&detect, 3=analyze
-  mode = 2;
+  mode = 0;
   
   // quiet mode (no outputs)
   quiet = 0;
@@ -13,7 +13,7 @@ General:
   debug_on = 0;
 
   // output file (results, etc. ...)
-  path_output = "out.txt";
+  path_output = "bhf_log_output.txt";
 };
 
 
@@ -99,10 +99,7 @@ Forest:
   regression_vote_accum_method = 0; // 0=MEAN, 1=HILLCLIMB
   
   // shrinkage factor
-  shrinkage = 1.0;
-
-
-  
+  shrinkage = 1.0;  
 
 
   // Hough Forest specific stuff (forest) ######################################################################################
@@ -115,10 +112,7 @@ Forest:
   mean_shift_votes_k = 1;
 
   // beginning with this depth, the forest only evaluates for regression
-  depth_regression_only = 13; // 13
-
-
-  
+  depth_regression_only = 13; // 13  
 
 
   // Hough Forest specific stuff (prediction) ######################################################################################
@@ -180,7 +174,6 @@ Forest:
   // scale interpolation in the Hough images
   use_scale_interpolation = 1;
 
-
   
   // Pose Estimation Stuff ##########################################################################################################
   
@@ -222,7 +215,7 @@ Data:
 
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // OBJECT DETECTION DATA SETS
+  // OBJECT DETECTION DATA SETS - Weizmann Cars ViewPoint dataset
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   posExamplesPath = "../../../data/training_cropped_images";
   posExamplesFile = "../../../data/train_pos_GT_4_pose_ze.txt";
@@ -233,7 +226,5 @@ Data:
   numNegPatchesPerImage = 10;
   testImagesPath = "../../../data/testing_images";
   testImagesFilenames = "../../../data/test_all_glasner.txt";
-  test_image_scales = [0.2036, 0.2199, 0.2362, 0.2524, 0.2687, 0.2850, 0.3013, 0.3176, 0.3334, 0.3502, 0.3664, 0.3827];
-
-  
+  test_image_scales = [0.2036, 0.2199, 0.2362, 0.2524, 0.2687, 0.2850, 0.3013, 0.3176, 0.3334, 0.3502, 0.3664, 0.3827];  
 };
