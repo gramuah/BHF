@@ -12,32 +12,17 @@ required to build the code:
 + libconfig++
 + libblitz
 
-##### For Microsoft Windows users:
-    
-Adapt the corresponding parts in the CMakeLists.txt files in:
-            
-      "BHF/src/apps/houghdetection/"
-
 ---
 
-#### HOW TO BUILD THE CODE:
+#### BUILDING THE CODE:
 
+To build the code, just follow these instructions:
 
-In general, this code package includes one application referred to Boosted Hought Forests.
-
-To build the code, change the directory to 
-
-```
-    BHF/bin/houghdetection/build
-```
-
-Then, simply type:
- 
-```
+```Shell
+    cd BHF/bin/houghdetection/build
     cmake ../../../src/apps/*
+    make
 ```
-to create the Makefile. Again "\*" is "houghdetection". 
-Finally, type "make" to build the binaries. 
 
 ---
 
