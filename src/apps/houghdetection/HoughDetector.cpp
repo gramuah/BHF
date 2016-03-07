@@ -22,6 +22,8 @@ void HoughDetector::DetectList()
 
     // Read the filenames of the test images
     std::vector<std::string> filenames;
+    cout << "Reading the filenames of the test images" << endl;
+cout << m_apphp->path_testFilenames << endl;
     this->ReadTestimageList(m_apphp->path_testFilenames, filenames);
 
     // Average the bbox sizes from the training images (we need it also for the backprojection variant!)

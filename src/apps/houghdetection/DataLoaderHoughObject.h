@@ -33,7 +33,7 @@ public:
     ~DataLoaderHoughObject();
 
     // Loading dataset (for classification and regression tasks)
-    DataSet<SampleImgPatch, LabelJointClassRegr> LoadTrainData();
+    DataSet<SampleImgPatch, LabelJointClassRegr> LoadTrainData(int flag);
     void GetTrainDataProperties(int& num_samples, int& num_classes, int& num_target_variables, int& num_feature_channels, int& num_z);
 
     // Normalize & Denormalize the data

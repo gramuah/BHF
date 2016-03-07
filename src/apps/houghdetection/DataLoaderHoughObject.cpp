@@ -18,7 +18,7 @@ DataLoaderHoughObject::DataLoaderHoughObject(AppContextJointClassRegr* hp) : m_h
 DataLoaderHoughObject::~DataLoaderHoughObject() { }
 
 
-DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainData()
+DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainData(int flag)
 {
 	//DataSet<SampleImgPatch, LabelJointClassRegr> m_trainset;
 
@@ -42,15 +42,17 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	Eigen::VectorXd vSize = Eigen::VectorXd::Zero(2);
 
 	this->LoadPosTrainFile(vFilenames, vBBox, vOffsets, vSegmasks, z_targets, pose_targets, ze_targets, this->m_num_target_variables, this->m_num_z);
-	if (!m_hp->quiet)
-		std::cout << vFilenames.size() << " positive images available for cropping patches" << std::endl;
-	if (!m_hp->quiet)
-		std::cout << "Progress: " << std::flush;
+	if (!m_hp->quiet){
+        if (flag == 0){
+		    std::cout << vFilenames.size() << " positive images available for cropping patches" << std::endl;}}
+	if (!m_hp->quiet){
+        if (flag == 0){
+		        std::cout << "Progress: " << std::flush;}}
 	for (size_t i = 0; i < vFilenames.size(); i++)
 	{
-
-		if (!m_hp->quiet && ((int)i % (int)round((double)vFilenames.size()/10.0)) == 0)
-			std::cout << round((double)i/(double)vFilenames.size()*100) << "% " << std::flush;
+        if (flag == 0){
+		    if (!m_hp->quiet && ((int)i % (int)round((double)vFilenames.size()/10.0)) == 0)
+			    std::cout << round((double)i/(double)vFilenames.size()*100) << "% " << std::flush;}
 
 		// read image
 		cv::Mat img_raw = DataLoaderHoughObject::ReadImageData(this->m_hp->path_posImages + "/" + vFilenames[i]);
@@ -82,6 +84,7 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 //		}
 
 	}
+    
 	if (!m_hp->quiet)
 		std::cout << std::endl;
 
@@ -90,14 +93,17 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	vFilenames.clear();
 	vBBox.clear();
 	this->LoadNegTrainFile(vFilenames, vBBox);
-	if (!m_hp->quiet)
-		std::cout << vFilenames.size() << " negative images available for cropping patches" << std::endl;
-	if (!m_hp->quiet)
-		std::cout << "Progress: ";
+	if (!m_hp->quiet){
+        if (flag == 0){
+		    std::cout << vFilenames.size() << " negative images available for cropping patches" << std::endl;}}
+	if (!m_hp->quiet){
+        if (flag == 0){
+		    std::cout << "Progress: ";}}
 	for (size_t i = 0; i < vFilenames.size(); i++)
 	{
-		if (!m_hp->quiet && ((int)i % (int)round((double)vFilenames.size()/10.0)) == 0)
-			std::cout << round((double)i/(double)vFilenames.size()*100) << "% " << std::flush;
+        if (flag == 0){
+		    if (!m_hp->quiet && ((int)i % (int)round((double)vFilenames.size()/10.0)) == 0)
+			    std::cout << round((double)i/(double)vFilenames.size()*100) << "% " << std::flush;}
 
 		// read image
 		cv::Mat img_raw = DataLoaderHoughObject::ReadImageData(this->m_hp->path_negImages + "/" + vFilenames[i]);
@@ -115,6 +121,7 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 			patch_locations.push_back(this->GeneratePatchPositionsFromRegion(img, img_features, m_hp->numNegPatchesPerImage, &vBBox[i], 0));
 		this->ExtractPatches(m_trainset, img, img_features, patch_locations[n_pos_imgs + i], n_pos_imgs+i, 0, 0, -1, -1);
 	}
+    
 	if (!m_hp->quiet)
 		std::cout << std::endl;
 
@@ -122,8 +129,9 @@ DataSet<SampleImgPatch, LabelJointClassRegr> DataLoaderHoughObject::LoadTrainDat
 	if (m_hp->store_dataset)
 	{
 		this->SavePatchPositions(m_hp->path_fixedDataset, patch_locations);
-		if (!m_hp->quiet)
-			std::cout << "Stored random patch locations!" << std::endl;
+        if (flag == 0){
+		    if (!m_hp->quiet)
+                std::cout << "Stored random patch locations!" << std::endl;}
 	}
 
 	this->m_num_samples = m_trainset.size();

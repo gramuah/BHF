@@ -51,7 +51,7 @@ void train(AppContextJointClassRegr* apphp)
 		cout << "Load training data ..." << endl;
 	
         DataLoaderHoughObject mydataloader(apphp);
-	DataSet<SampleImgPatch, LabelJointClassRegr> dataset_train = mydataloader.LoadTrainData();
+	DataSet<SampleImgPatch, LabelJointClassRegr> dataset_train = mydataloader.LoadTrainData(0);
 
 	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
 	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
@@ -145,9 +145,13 @@ void houghdetect(AppContextJointClassRegr* apphp)
 	rfparams->m_adf_loss_classification = apphp->global_loss_classification;
 	rfparams->m_adf_loss_regression = apphp->global_loss_regression;
 
-        DataLoaderHoughObject mydataloader(apphp);
+    std::cout << "Obtaining data/config information... " << std::endl;
+    DataLoaderHoughObject mydataloader(apphp);
+    DataSet<SampleImgPatch, LabelJointClassRegr> dataset_train = mydataloader.LoadTrainData(1);
 	int num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z;
 	mydataloader.GetTrainDataProperties(num_train_samples, num_classes, num_target_variables, num_feature_channels, num_z);
+    cout << "num classes: " << num_classes << endl;
+    cout << "num aspects: " << num_z << endl; 
 	apphp->num_classes = num_classes;
 	apphp->num_z = num_z;
 	
@@ -174,8 +178,8 @@ void houghdetect(AppContextJointClassRegr* apphp)
 	int status = mkdir(apphp->path_bboxes.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (status == -1)
 	{
-		std::cout << "Could not create the folder to store bboxes" << std::endl;
-		throw std::runtime_error("Could not create bboxespath");
+		std::cout << "The directory already exist!" << std::endl;
+		// throw std::runtime_error("Could not create bboxespath");
 	}
 
 	// init the detector
