@@ -76,11 +76,15 @@ It is very simple to work with them, the different parameters are documented dir
 
 In order to reproduce the experiments in our paper these are the steps to follow:
 
-+  Train the BHF model.
++  Train and test the BHF model.
 
 ```Shell
    ./boostedHoughtForests ../configs/std.txt
 ```
-+ TODO ...
++ To visualize the precision and recall curves run the following Matlab script located in "BHF/scripts_results":
+
+```Shell
+   eval_results('../bindata')
+```
 
 ---

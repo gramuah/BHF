@@ -8,7 +8,7 @@ overlap = 0.3;
 samuel2myFramework(bindataDir, ARFdetectionDir);
 run_NMS(overlap, ARFdetectionDir);
 
-%% PASCAL eval
+%% Prec/recall curve
 minoverlap=0.5;
 addpath([cd 'data']);
 groundTruthFile=['/test_all_gt.txt'];
@@ -133,8 +133,8 @@ for i=1:Ndetections
             confidence(h)= s(a);
             bb(h,:)=[bb1(a) bb2(a) bb3(a) bb4(a)];
             centers(h,:) = [c1(a) c2(a)];
-            pose(h)=po(a);%vw(1);%po(a);
-            zenith(h)=ze(a);%zn(1);%ze(a);
+            pose(h)=po(a);
+            zenith(h)=ze(a);
             
             h=h+1;
         end
