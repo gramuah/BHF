@@ -1,32 +1,32 @@
 function eval_results(bindataDir)
-% bindataDir --> directorio donde este la carpeta que pone bboxes
-% dataDir --> directorio con los archivos .txt (../data)
+% bindataDir --> bindata dir
+% dataDir --> dir with .txt (../data) files
 addpath('data');
-ARFdetectionDir = [bindataDir, '/detections']; % donde lo quieres guardar
+BHFdetectionDir = [bindataDir, '/detections']; % output Dir
 overlap = 0.3;
 
-samuel2myFramework(bindataDir, ARFdetectionDir);
-run_NMS(overlap, ARFdetectionDir);
+myFramework(bindataDir, BHFdetectionDir);
+run_NMS(overlap, BHFdetectionDir);
 
 %% Prec/recall curve
 minoverlap=0.5;
 addpath([cd 'data']);
 groundTruthFile=['/test_all_gt.txt'];
-evaldetpose(ARFdetectionDir, groundTruthFile, minoverlap);
+evaldetpose(BHFdetectionDir, groundTruthFile, minoverlap);
 
 end
 
-function samuel2myFramework(bindataDir,ARFDataDir)
+function myFramework(bindataDir,BHFDataDir)
 
 
-mkdir([ARFDataDir]);
+mkdir([BHFDataDir]);
 
 [imNames] = textread(['test_images.txt'],'%s');
 
 for i=1:length(imNames)
-    mkdir([ ARFDataDir, '/', imNames{i}]);
-    fidC = fopen(sprintf('%s/%s/candidates_samuel.txt', ARFDataDir, imNames{i}),'w');
-    fidBB = fopen(sprintf('%s/%s/boundingboxes_samuel.txt', ARFDataDir, imNames{i}),'w');
+    mkdir([ BHFDataDir, '/', imNames{i}]);
+    fidC = fopen(sprintf('%s/%s/candidates.txt', BHFDataDir, imNames{i}),'w');
+    fidBB = fopen(sprintf('%s/%s/boundingboxes.txt', BHFDataDir, imNames{i}),'w');
    
     datb = importdata(sprintf('%s/bboxes/bboxes_testimg_%s.txt', bindataDir, num2str(i-1)), ' ', 1);
     datp = importdata(sprintf('%s/bboxes/pose_testimg_%s.txt', bindataDir, num2str(i-1)), ' ', 1);
@@ -44,15 +44,15 @@ for i=1:length(imNames)
 end
 end
 
-function run_NMS(overlap, ARFdetectionDir)
+function run_NMS(overlap, BHFdetectionDir)
 
-detections=dir([ARFdetectionDir, '/*.jpg']);
+detections=dir([BHFdetectionDir, '/*.jpg']);
 Ndetections=length(detections);
 
 for n=1:Ndetections
     %% Load data
-    filenameBBox= fullfile (sprintf('%s/%s/boundingboxes_samuel.txt',ARFdetectionDir, detections(n).name));
-    filenameCand= fullfile (sprintf('%s/%s/candidates_samuel.txt',ARFdetectionDir, detections(n).name));
+    filenameBBox= fullfile (sprintf('%s/%s/boundingboxes.txt',BHFdetectionDir, detections(n).name));
+    filenameCand= fullfile (sprintf('%s/%s/candidates.txt',BHFdetectionDir, detections(n).name));
     
     
     dataBBox = textread(filenameBBox);
@@ -83,7 +83,7 @@ for n=1:Ndetections
     pick = nms(bbs, overlap);
     [value ind]=sort(score(pick),'descend');
     % Save the results
-    fid=fopen(fullfile (sprintf('%s/%s/Results_samuel.txt',ARFdetectionDir, detections(n).name)),'w');
+    fid=fopen(fullfile (sprintf('%s/%s/Results.txt',BHFdetectionDir, detections(n).name)),'w');
     for m =1:length(pick)
         bb = boxes(pick(ind(m)),:);
         if bb(1)<0
@@ -123,9 +123,9 @@ h=1;
 
 for i=1:Ndetections
    
-    if exist([DetectionsDir, '/',detections(i).name, '/Results_samuel.txt'],'file')
+    if exist([DetectionsDir, '/',detections(i).name, '/Results.txt'],'file')
         fprintf('%\n', detections(i).name);
-        [s c1 c2 bb1 bb2 bb3 bb4 po ze sc]=textread([DetectionsDir, '/',detections(i).name, '/Results_samuel.txt']);
+        [s c1 c2 bb1 bb2 bb3 bb4 po ze sc]=textread([DetectionsDir, '/',detections(i).name, '/Results.txt']);
         [Nc]=size(s,1);
 		
         for a=1:Nc
