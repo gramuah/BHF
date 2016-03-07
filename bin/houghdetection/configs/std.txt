@@ -1,7 +1,7 @@
 General:
 {
-  // Method: 5 = Hough Forest, 6 = Boosted Hough Forest, 7 = AD Hough Forest
-  method = 6;
+  // Method: 5 = Hough Forest, 7 = Boosted Hough Forest (BHF)
+  method = 7;
   
   // mode: 0=train, 1=detect, 2=train&detect, 3=analyze
   mode = 0;
