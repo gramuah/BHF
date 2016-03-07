@@ -2,7 +2,6 @@
 
 #### REQUIREMENTS:
 
-
 The BHF code is developed and tested under Ubuntu 14.04 and the following libraries are 
 required to build the code:
 + gcc
@@ -11,6 +10,7 @@ required to build the code:
 + openmp
 + libconfig++
 + libblitz
++ libboost
 
 ---
 
@@ -19,7 +19,9 @@ required to build the code:
 To build the code, just follow these instructions:
 
 ```Shell
-    cd BHF/bin/houghdetection/build
+    cd BHF/bin/houghdetection
+    mkdir build
+    cd build
     cmake ../../../src/apps/*
     make
 ```
