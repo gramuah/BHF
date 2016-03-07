@@ -12,19 +12,20 @@ This is a repository with an implementation of the BHF model described in our BM
 
 If you make use of this data and software, please cite the following references in any publications:
 
-@InProceedings{Redondo-Cabrera2015,
+
+	@inproceedings{Redondo-Cabrera2015,
         Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest},
         Author                   = {Redondo-Cabrera, C. and Lopez-Sastre, R.~J.},
         Booktitle                = {BMVC},
         Year                     = {2015}
-}
+	}
 
-@InProceedings{Schulter13,
+	@inproceedings{Schulter13,
         Title                    = {Alternating Regression Forests for Object Detection and Pose Estimation},
         Author                   = {Samuel Schulter and Christian Leistner and Paul Wohlhart and Peter M. Roth and Horst Bischof},
         Booktitle                = {ICCV},
         Year                     = {2013}
-}
+	}
 
 
 
