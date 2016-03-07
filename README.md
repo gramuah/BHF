@@ -3,7 +3,7 @@
 #### REQUIREMENTS:
 
 
-The code is developed and tested under Ubuntu 14.04 trusty and the following libraries are 
+The BHF code is developed and tested under Ubuntu 14.04 and the following libraries are 
 required to build the code:
 + gcc
 + cmake
