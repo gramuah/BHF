@@ -1,5 +1,33 @@
 # BHF - Boosted Hough Forest
 
+#### INTRODUCTION:
+
+Boosted Hough Forest (BHF) is a framework for object detection and pose estimation with Hough Forests.
+
+This is a repository with an implementation of the BHF model described in our BMVC 2015 paper.
+
+
+
+#### CITING
+
+If you make use of this data and software, please cite the following references in any publications:
+
+@InProceedings{Redondo-Cabrera2015,
+        Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest},
+        Author                   = {Redondo-Cabrera, C. and Lopez-Sastre, R.~J.},
+        Booktitle                = {BMVC},
+        Year                     = {2015}
+}
+
+@InProceedings{Schulter13,
+        Title                    = {Alternating Regression Forests for Object Detection and Pose Estimation},
+        Author                   = {Samuel Schulter and Christian Leistner and Paul Wohlhart and Peter M. Roth and Horst Bischof},
+        Booktitle                = {ICCV},
+        Year                     = {2013}
+}
+
+
+
 #### REQUIREMENTS:
 
 The BHF code is developed and tested under Ubuntu 14.04 and the following libraries are 
@@ -67,13 +95,3 @@ For example,
 ```
 ---
 
-#### CITING
-
-If you make use of this data and software, please cite the following reference in any publications:
-
-    @InProceedings{Redondo-CabreraBMVC 2015,
-        Title                    = {Because better detections are still possible: Multi-aspect Object Detection with Boosted Hough Forest},
-        Author                   = {Carolina Redondo-Cabrera and Roberto Javier López-Sastre},
-        Booktitle                = {BMVC},
-        Year                     = {2015}
-    }
