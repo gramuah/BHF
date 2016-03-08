@@ -84,7 +84,9 @@ In order to reproduce the experiments in our paper these are the steps to follow
 + To visualize the precision and recall curves run the following Matlab script located in "BHF/scripts_results":
 
 ```Shell
-   eval_results('../bindata')
+   cd BHF/scripts_results
+   matlab #this opens matlab  
+   eval_results('../bin/houghdetection/bindata') #use the bindata directory where the results have been saved
 ```
 
 ---
