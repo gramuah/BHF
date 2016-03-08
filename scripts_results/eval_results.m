@@ -1,17 +1,19 @@
 function eval_results(bindataDir)
-% bindataDir --> bindata dir
-% dataDir --> dir with .txt (../data) files
-addpath('data');
+% bindataDir --> bindata dir with the results
+addpath([cd '/data']);
 BHFdetectionDir = [bindataDir, '/detections']; % output Dir
-overlap = 0.3;
 
+disp('Reading detections');
 myFramework(bindataDir, BHFdetectionDir);
+%non maximum-supression of the detections
+overlap = 0.3;
+disp('Performing Non-maximum supression');
 run_NMS(overlap, BHFdetectionDir);
 
-%% Prec/recall curve
+%% Show Prec/recall curve
 minoverlap=0.5;
-addpath([cd 'data']);
 groundTruthFile=['/test_all_gt.txt'];
+disp('Obtaining results: prec/recall curves, etc.');
 evaldetpose(BHFdetectionDir, groundTruthFile, minoverlap);
 
 end
@@ -268,7 +270,7 @@ precD=tp./(fp+tp);
 
 
 
-% compute average precision in detection
+% compute average orientation similarity (AOS) for the azimuth
 tmp(ind_fp)=0;
 for h=1:length(error)
     tmp(ind_tp(h))=(1 + cos((error(h)*pi)/180))/2;
@@ -284,7 +286,7 @@ for t=0:0.1:1
     AOS=AOS+p/11;
 end
 
-% compute average precision in detection
+% compute AOS for the zenith
 tmp_z(ind_fp)=0;
 for h=1:length(error_zenith)
     tmp_z(ind_tp(h))=(1 + cos((error_zenith(h)*pi)/180))/2;
@@ -302,7 +304,7 @@ end
 
 
 
-% compute average precision in detection
+% compute AP for detection
 apD=0;
 for t=0:0.1:1
     p=max(precD(recD>=t));
@@ -317,17 +319,16 @@ result.rec = recD;
 result.ap = apD;
 
 figure()
-% plot precision/recall
+% plot precision/recall curves
 plot(recD,accD,'-r','LineWidth',2);
 hold on;
-plot(recD,accZ,'-g','LineWidth',2);
-plot(recD,precD,'-b','LineWidth',2);
+plot(recD,accZ,'-.g','LineWidth',2);
+plot(recD,precD,'--b','LineWidth',2);
 grid;
-legend('Orientation Similarity az', 'Orientation Similarity ze','Detection Precision','Location','southwest')
+legend('Azimuth precision', 'Zenith precision','Detection precision','Location','southwest')
 xlabel 'recall'
 ylabel 'precision'
-title(sprintf('AP = %.4f' ,apD));
-title(sprintf('AP = %.4f ; AOS = %.4f ; AOS = %.4f', apD,AOS, AOS_z));
+title(sprintf('AP(det) = %.4f ; AOS(azimuth) = %.4f ; AOS(zenith) = %.4f', apD,AOS, AOS_z));
 axis([0 1 0 1]);
 
 end
